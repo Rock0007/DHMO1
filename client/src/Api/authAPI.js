@@ -127,17 +127,4 @@ export const getAllPatientDetails = async () => {
   }
 };
 
-// export const getPatientDetails = async (phoneNumber) => {
-//   try {
-//     const response = await authApi.get(`/getpatientdetails/${phoneNumber}`);
-//     return response.data;
-//   } catch (error) {
-//     console.error("Get patient details error:", error);
-//     throw (
-//       error.response?.data ||
-//       "An error occurred while fetching patient details."
-//     );
-//   }
-// };
-
 export default authApi;
