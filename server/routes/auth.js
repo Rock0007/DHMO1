@@ -10,6 +10,7 @@ const {
   logout,
   editProfile,
   checkExistingRecord,
+  PatientEntry,
 } = require("../controllers/authController");
 
 router.use(
@@ -26,5 +27,6 @@ router.post("/signup", signup);
 router.delete("/logout", authenticateToken, logout);
 router.put("/staff/edit", authenticateToken, editProfile);
 router.get("/checkexistingrecord/:field/:value", checkExistingRecord);
+router.post("/patiententry", authenticateToken, PatientEntry);
 
 module.exports = router;

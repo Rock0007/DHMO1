@@ -6,12 +6,13 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  ToastAndroid,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
-
+import { submitPatientEntry } from "../Api/authAPI";
 import CheckBox from "react-native-check-box";
+import { useNavigation } from "@react-navigation/native";
 
-const PatientEntry = ({ navigation }) => {
+const PatientEntry = ({}) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [age, setAge] = useState("");
@@ -22,18 +23,48 @@ const PatientEntry = ({ navigation }) => {
   const [otherInfo, setOtherInfo] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
 
-  const handleSubmit = () => {
-    console.log("Form submitted:", {
-      firstName,
-      lastName,
-      age,
-      gender,
-      isCovid19Positive,
-      diagnosis,
-      treatment,
-      otherInfo,
-      phoneNumber,
-    });
+  const navigation = useNavigation();
+
+  const handleSubmit = async () => {
+    try {
+      const response = await submitPatientEntry({
+        firstName,
+        lastName,
+        age,
+        gender,
+        isCovid19Positive,
+        phoneNumber,
+        diagnosis,
+        treatment,
+        otherInfo,
+      });
+
+      console.log("Form submitted successfully:", response);
+      ToastAndroid.showWithGravity(
+        "Patient entry submitted successfully.",
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER
+      );
+
+      setFirstName("");
+      setLastName("");
+      setAge("");
+      setGender("");
+      setIsCovid19Positive(false);
+      setDiagnosis("");
+      setTreatment("");
+      setOtherInfo("");
+      setPhoneNumber("");
+
+      navigation.navigate("Patient Logs");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      ToastAndroid.showWithGravity(
+        error.message || "An error occurred during patient entry.",
+        ToastAndroid.LONG,
+        ToastAndroid.CENTER
+      );
+    }
   };
 
   return (

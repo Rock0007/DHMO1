@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const SubCenterStaff = require("../models/scStaff");
+const PatientDetails = require("../models/PatientDetails");
 const { hashPassword, comparePassword } = require("../helpers/auth");
 
 // Test
@@ -254,6 +255,73 @@ const checkExistingRecord = async (req, res) => {
   }
 };
 
+//PatientEntry
+const PatientEntry = async (req, res) => {
+  try {
+    const { firstName, age, gender, phoneNumber } = req.body;
+
+    if (!firstName || !age || !gender || !phoneNumber) {
+      return res
+        .status(400)
+        .json({ message: "Please provide all required fields." });
+    }
+
+    // Validate phoneNumber format: should be exactly 10 digits
+    if (!/^\d{10}$/.test(phoneNumber)) {
+      return res.status(400).json({
+        message:
+          "Invalid phoneNumber format. Please provide exactly 10 digits.",
+      });
+    }
+
+    const existingPatient = await PatientDetails.findOne({ phoneNumber });
+
+    if (existingPatient) {
+      return res
+        .status(400)
+        .json({ message: "Patient with this phoneNumber already exists" });
+    }
+
+    const newPatient = new PatientDetails({
+      firstName,
+      lastName: req.body.lastName || "",
+      age,
+      gender,
+      isCovid19Positive: req.body.isCovid19Positive || false,
+      phoneNumber,
+      diagnosis: req.body.diagnosis || "",
+      treatment: req.body.treatment || "",
+      otherInfo: req.body.otherInfo || "",
+    });
+
+    const savedPatient = await newPatient.save();
+
+    res.status(201).json({
+      message: "Patient Entry created successfully",
+      patient: savedPatient,
+    });
+  } catch (error) {
+    console.error(error);
+
+    if (error.name === "ValidationError") {
+      const errorMessages = Object.values(error.errors).map(
+        (err) => err.message
+      );
+      return res
+        .status(400)
+        .json({ message: "Validation error", errors: errorMessages });
+    }
+
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: "Duplicate phoneNumber. Please provide a unique phoneNumber.",
+      });
+    }
+
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   test,
   login,
@@ -262,4 +330,5 @@ module.exports = {
   signup,
   editProfile,
   checkExistingRecord,
+  PatientEntry,
 };
