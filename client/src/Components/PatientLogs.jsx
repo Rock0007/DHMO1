@@ -1,165 +1,190 @@
-import React, { useState } from "react";
-import { ScrollView, View, Text, TextInput, StyleSheet } from "react-native";
-import { MagnifyingGlassIcon } from "react-native-heroicons/solid";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
+import { getAllPatientDetails } from "../Api/authAPI";
+import { MagnifyingGlassIcon } from "react-native-heroicons/outline";
 
-// Move staffData array outside the PatientLog component
-const generateRandomPhoneNumber = () => {
-  const randomNumber = Math.floor(Math.random() * 9000000000) + 1000000000;
-  return randomNumber.toString();
-};
-
-const generateRandomStaffData = () => {
-  const currentDate = new Date();
-  const birthDate = new Date(
-    currentDate.getFullYear() - Math.floor(Math.random() * 30 + 20),
-    Math.floor(Math.random() * 12),
-    Math.floor(Math.random() * 28) + 1
-  );
-
-  return {
-    fullName: `Staff Member ${Math.floor(Math.random() * 100) + 1}`,
-    age: currentDate.getFullYear() - birthDate.getFullYear(),
-    phoneNumber: generateRandomPhoneNumber(),
-    birthDate: birthDate.toISOString().split("T")[0],
-  };
-};
-
-const initialStaffData = Array.from({ length: 5 }, () =>
-  generateRandomStaffData()
-);
-
-const PatientLog = () => {
+const PatientLogs = () => {
+  const [loading, setLoading] = useState(true);
+  const [patientData, setPatientData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredStaffData, setFilteredStaffData] = useState(initialStaffData);
+  const [updateTimestamp, setUpdateTimestamp] = useState(Date.now());
+
+  useEffect(() => {
+    const fetchAllPatients = async () => {
+      try {
+        const data = await getAllPatientDetails();
+        const sortedData = data.patients.sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        );
+        setPatientData(sortedData || []);
+      } catch (error) {
+        console.error("Error fetching all patient details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllPatients();
+  }, [updateTimestamp]);
 
   const handleSearchChange = (query) => {
     setSearchQuery(query);
-    filterStaffData(query);
   };
 
-  const filterStaffData = (query) => {
-    const filteredData = initialStaffData.filter((staff) => {
-      const fullNameLower = staff.fullName.toLowerCase();
-      const phoneNumberLower = staff.phoneNumber.toLowerCase();
-      const birthDateLower = staff.birthDate.toLowerCase();
+  const renderPatientCard = (patient, index) => (
+    <TouchableOpacity
+      key={index}
+      style={styles.patientContainer}
+      activeOpacity={0.2}
+    >
+      <View style={styles.space}>
+        <Text style={styles.patientHeading}>Patient ID:</Text>
+        <Text style={styles.greenText}>{patient._id}</Text>
+      </View>
 
-      const lowercaseQuery = query.toLowerCase();
+      <View style={styles.space}>
+        <Text style={styles.keyField}>Patient Name:</Text>
+        <Text>{`${patient.firstName} ${patient.lastName}`}</Text>
+      </View>
+      <View style={styles.space}>
+        <Text style={styles.keyField}>Age:</Text>
+        <Text>{patient.age}</Text>
+      </View>
+      <View style={styles.space}>
+        <Text style={styles.keyField}>Mobile Number:</Text>
+        <Text>{patient.phoneNumber}</Text>
+      </View>
+      <View style={styles.space}>
+        <Text style={styles.keyField}>Date:</Text>
+        <Text>{patient.date}</Text>
+      </View>
+    </TouchableOpacity>
+  );
 
-      return (
-        fullNameLower.includes(lowercaseQuery) ||
-        phoneNumberLower.includes(lowercaseQuery) ||
-        birthDateLower.includes(lowercaseQuery)
-      );
-    });
-
-    setFilteredStaffData(filteredData);
+  const handleUpdate = () => {
+    setUpdateTimestamp(Date.now());
   };
 
-  const StaffCard = ({ staffDetails }) => {
-    const { fullName, age, phoneNumber, birthDate } = staffDetails;
-
+  if (loading) {
     return (
-      <View style={styles.cardContainer}>
-        <Text style={styles.cardHeadingTop}>Patient ID</Text>
-        <View>
-          <Text style={styles.cardHeading}>User Name</Text>
-          <Text style={styles.cardData}>{fullName}</Text>
-
-          <Text style={styles.cardHeading}>Age</Text>
-          <Text style={styles.cardData}>{age}</Text>
-
-          <Text style={styles.cardHeading}>Mobile Number</Text>
-          <Text style={styles.cardData}>{phoneNumber}</Text>
-
-          <Text style={styles.cardHeading}>Birth Date</Text>
-          <Text style={styles.cardData}>{birthDate}</Text>
-        </View>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007bff" />
       </View>
     );
-  };
+  }
+
+  const filteredPatientData = patientData.filter((patient) => {
+    const fullName = `${patient.firstName} ${patient.lastName}`;
+    const lowercaseQuery = searchQuery.toLowerCase();
+
+    return (
+      fullName.toLowerCase().includes(lowercaseQuery) ||
+      patient.phoneNumber.includes(lowercaseQuery) ||
+      patient._id.toLowerCase().includes(lowercaseQuery)
+    );
+  });
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Search Bar */}
       <View style={styles.searchContainer}>
-        <MagnifyingGlassIcon style={styles.searchIcon} />
+        <MagnifyingGlassIcon name="pencil-square" size={18} color="gray" />
         <TextInput
           style={styles.searchBar}
           placeholder="Search..."
-          onChangeText={(text) => handleSearchChange(text)}
+          onChangeText={handleSearchChange}
           value={searchQuery}
         />
       </View>
-
-      {/* Display Filtered Staff Data */}
-      {filteredStaffData.map((staff, index) => (
-        <StaffCard key={index} staffDetails={staff} />
-      ))}
+      <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
+        <Text style={styles.updateButtonText}>Update Patient Details</Text>
+      </TouchableOpacity>
+      <View style={styles.cardContainer}>
+        {filteredPatientData.length > 0 ? (
+          filteredPatientData.map((patient, index) =>
+            renderPatientCard(patient, index)
+          )
+        ) : (
+          <Text style={styles.noMatchingFields}>No matching fields</Text>
+        )}
+      </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    paddingVertical: 20,
+    padding: 20,
+    backgroundColor: "#fff",
   },
   cardContainer: {
+    marginTop: 10,
+  },
+  patientContainer: {
     borderRadius: 10,
-    margin: 10,
+    marginBottom: 15,
     padding: 15,
-    backgroundColor: "#2c9fd4",
+    borderColor: "gray",
+    borderWidth: 1,
   },
-  gradientContainer: {
+  patientHeading: {
+    fontWeight: "bold",
+    color: "#333",
+  },
+  greenText: {
+    color: "green",
+    fontWeight: "bold",
+  },
+  keyField: {
+    fontWeight: "bold",
+    marginBottom: 0,
+  },
+  loadingContainer: {
     flex: 1,
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-  cardText: {
-    fontSize: 16,
-    color: "#fff",
-    marginBottom: 10,
+    justifyContent: "center",
+    alignItems: "center",
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
-    backgroundColor: "white",
-    borderRadius: 5,
-    paddingHorizontal: 10,
     borderWidth: 1,
     borderColor: "gray",
-    marginHorizontal: 10,
-  },
-  searchIcon: {
-    marginRight: 10,
-    color: "#777",
-    fontWeight: "bold",
+    borderRadius: 5,
+    padding: 5,
+    paddingLeft: 10,
   },
   searchBar: {
     flex: 1,
-    height: 50,
-    fontSize: 16,
-    fontWeight: "bold",
+    height: 40,
+    paddingLeft: 10,
   },
-  cardHeadingTop: {
-    fontSize: 18,
-    color: "white",
+  space: {
+    marginTop: 10,
+  },
+  noMatchingFields: {
     textAlign: "center",
-    marginBottom: 10,
+    marginTop: 20,
+    fontSize: 16,
     fontWeight: "bold",
   },
-  cardHeading: {
-    fontSize: 16,
-    color: "lightgray",
-    marginBottom: 5,
-    fontWeight: "semibold",
+  updateButton: {
+    backgroundColor: "#007bff",
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: "center",
   },
-  cardData: {
-    fontSize: 16,
-    color: "black",
-    marginBottom: 10,
+  updateButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 
-export default PatientLog;
+export default PatientLogs;

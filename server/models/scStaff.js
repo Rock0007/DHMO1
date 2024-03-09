@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
+const { format } = require("date-fns");
 
 const staffSchema = new Schema(
   {
@@ -49,13 +50,16 @@ const staffSchema = new Schema(
       type: String,
       required: true,
     },
-  },
-  {
-    timestamps: {
-      createdAt: "created_at",
-      updatedAt: "updated_at",
+    Date: {
+      type: String,
+      default: () => format(new Date(), "dd-MM-yyyy"),
     },
-  }
+    Time: {
+      type: String,
+      default: () => format(new Date(), "HH:mm:ss"),
+    },
+  },
+  { timestamps: { createdAt: false, updatedAt: false } }
 );
 
 const SubCenterStaff = mongoose.model("SubCenterStaff", staffSchema);

@@ -11,6 +11,7 @@ const {
   editProfile,
   checkExistingRecord,
   PatientEntry,
+  getPatientDetails,
 } = require("../controllers/authController");
 
 router.use(
@@ -28,5 +29,6 @@ router.delete("/logout", authenticateToken, logout);
 router.put("/staff/edit", authenticateToken, editProfile);
 router.get("/checkexistingrecord/:field/:value", checkExistingRecord);
 router.post("/patiententry", authenticateToken, PatientEntry);
+router.get("/patientdetails", authenticateToken, getPatientDetails);
 
 module.exports = router;

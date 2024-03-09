@@ -114,4 +114,30 @@ export const submitPatientEntry = async (data) => {
   }
 };
 
+export const getAllPatientDetails = async () => {
+  try {
+    const response = await authApi.get("/patientdetails");
+    return response.data;
+  } catch (error) {
+    console.error("Get all patient details error:", error);
+    throw (
+      error.response?.data ||
+      "An error occurred while fetching all patient details."
+    );
+  }
+};
+
+// export const getPatientDetails = async (phoneNumber) => {
+//   try {
+//     const response = await authApi.get(`/getpatientdetails/${phoneNumber}`);
+//     return response.data;
+//   } catch (error) {
+//     console.error("Get patient details error:", error);
+//     throw (
+//       error.response?.data ||
+//       "An error occurred while fetching patient details."
+//     );
+//   }
+// };
+
 export default authApi;

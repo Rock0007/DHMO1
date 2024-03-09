@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { format } = require("date-fns");
 
 const patientDetailsSchema = new mongoose.Schema({
   firstName: {
@@ -33,9 +34,13 @@ const patientDetailsSchema = new mongoose.Schema({
   otherInfo: {
     type: String,
   },
-  timestamp: {
-    type: Date,
-    default: Date.now,
+  date: {
+    type: String,
+    default: () => format(new Date(), "dd-MM-yyyy"),
+  },
+  time: {
+    type: String,
+    default: () => format(new Date(), "HH:mm"),
   },
 });
 

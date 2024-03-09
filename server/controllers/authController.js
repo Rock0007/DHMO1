@@ -322,6 +322,25 @@ const PatientEntry = async (req, res) => {
   }
 };
 
+//Get PatientDetails
+const getPatientDetails = async (req, res) => {
+  try {
+    const allPatients = await PatientDetails.find().sort({ date: -1 });
+
+    if (!allPatients || allPatients.length === 0) {
+      return res.status(404).json({ message: "No patients found" });
+    }
+
+    res.status(200).json({
+      message: "All patient details retrieved successfully",
+      patients: allPatients,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   test,
   login,
@@ -331,4 +350,5 @@ module.exports = {
   editProfile,
   checkExistingRecord,
   PatientEntry,
+  getPatientDetails,
 };
