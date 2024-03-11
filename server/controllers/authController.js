@@ -360,6 +360,7 @@ const getPatientDetailsById = async (req, res) => {
   }
 };
 
+//Edit Patient Details
 const editPatientDetailsById = async (req, res) => {
   try {
     const patientId = req.params.id;
@@ -377,6 +378,19 @@ const editPatientDetailsById = async (req, res) => {
 
     if (!patientId) {
       return res.status(400).json({ message: "Invalid update request." });
+    }
+
+    // Check if the new phone number already exists for a different patient
+    const existingPatient = await PatientDetails.findOne({
+      phoneNumber,
+      _id: { $ne: patientId }, // Exclude the current patient from the check
+    });
+
+    if (existingPatient) {
+      return res.status(400).json({
+        message:
+          "Phone Number already exists, try updating with a different Number.",
+      });
     }
 
     const updatedPatient = await PatientDetails.findByIdAndUpdate(
@@ -409,6 +423,7 @@ const editPatientDetailsById = async (req, res) => {
   }
 };
 
+//Delete Patient Details
 const deletePatientById = async (req, res) => {
   try {
     const patientId = req.params.id;
@@ -433,6 +448,96 @@ const deletePatientById = async (req, res) => {
   }
 };
 
+//Patient Revist
+const revisits = async (req, res) => {
+  try {
+    const { phoneNumber } = req.body;
+
+    if (!/^\d{10}$/.test(phoneNumber)) {
+      return res.status(400).json({
+        message:
+          "Invalid phoneNumber format. Please provide exactly 10 digits.",
+      });
+    }
+
+    const existingPatient = await PatientDetails.findOne({ phoneNumber });
+
+    if (!existingPatient) {
+      return res.status(404).json({
+        message:
+          "Patient with this phoneNumber does not exist. Cannot add revisit treatment.",
+      });
+    }
+
+    const { diagnosis, treatment, otherInfo } = req.body;
+
+    existingPatient.revisits.push({
+      diagnosis: diagnosis || "",
+      treatment: treatment || "",
+      otherInfo: otherInfo || "",
+      date: new Date(),
+    });
+
+    const updatedPatient = await existingPatient.save();
+
+    return res.status(200).json({
+      message: "Revisit treatment added successfully",
+      patient: updatedPatient,
+    });
+  } catch (error) {
+    console.error(error);
+
+    if (error.name === "ValidationError") {
+      const errorMessages = Object.values(error.errors).map(
+        (err) => err.message
+      );
+      return res
+        .status(400)
+        .json({ message: "Validation error", errors: errorMessages });
+    }
+
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: "Duplicate phoneNumber. Please provide a unique phoneNumber.",
+      });
+    }
+
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+//Get Revisits Data
+const getRevisits = async (req, res) => {
+  try {
+    const { phoneNumber } = req.params;
+
+    if (!/^\d{10}$/.test(phoneNumber)) {
+      return res.status(400).json({
+        message:
+          "Invalid phoneNumber format. Please provide exactly 10 digits.",
+      });
+    }
+
+    const existingPatient = await PatientDetails.findOne({ phoneNumber });
+
+    if (!existingPatient) {
+      return res.status(404).json({
+        message: "Patient with this phoneNumber does not exist.",
+      });
+    }
+
+    const revisits = existingPatient.revisits;
+
+    return res.status(200).json({
+      message: "Revisit data retrieved successfully",
+      revisits,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   test,
   login,
@@ -446,4 +551,6 @@ module.exports = {
   getPatientDetailsById,
   editPatientDetailsById,
   deletePatientById,
+  revisits,
+  getRevisits,
 };

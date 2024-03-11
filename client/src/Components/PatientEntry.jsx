@@ -67,6 +67,29 @@ const PatientEntry = ({}) => {
     }
   };
 
+  const diagnosisLabels = [
+    "Fever",
+    "Cough",
+    "Headache",
+    "Nausea",
+    "Fatigue",
+    "Diabetes",
+    "Asthma",
+    "Allergies",
+    "Arthritis",
+    "Body pains",
+    "Motions",
+    "Hypertension (High Blood Pressure)",
+  ];
+
+  const handleLabelClick = (label) => {
+    if (!diagnosis.includes(label)) {
+      setDiagnosis((prevDiagnosis) =>
+        prevDiagnosis ? `${prevDiagnosis}, ${label}` : label
+      );
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.contentContainer}>
@@ -128,6 +151,18 @@ const PatientEntry = ({}) => {
             keyboardType="numeric"
             maxLength={10}
           />
+
+          <View style={styles.diagnosisLabelsContainer}>
+            {diagnosisLabels.map((label, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.labelButton}
+                onPress={() => handleLabelClick(label)}
+              >
+                <Text>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           <Text style={styles.sectionHeading}>Diagnosis</Text>
           <TextInput
@@ -270,6 +305,18 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  diagnosisLabelsContainer: {
+    flexDirection: "row",
+    marginBottom: 15,
+    flexWrap: "wrap",
+  },
+  labelButton: {
+    backgroundColor: "pink",
+    padding: 10,
+    marginRight: 10,
+    marginBottom: 10,
+    borderRadius: 5,
   },
 });
 

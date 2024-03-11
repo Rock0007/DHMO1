@@ -172,4 +172,35 @@ export const deletePatientById = async (patientId) => {
   }
 };
 
+export const submitRevisit = async (data) => {
+  try {
+    const response = await authApi.post("/revisits", data);
+
+    if (response && response.data) {
+      return response.data;
+    } else {
+      throw new Error("Invalid response from the server");
+    }
+  } catch (error) {
+    console.error("Revisit Entry error:", error);
+    throw error.response?.data || "An error occurred during revisit entry.";
+  }
+};
+export const getRevisitData = async (phoneNumber) => {
+  try {
+    const response = await authApi.get(`/revisits/${phoneNumber}`);
+
+    if (response && response.data) {
+      return response.data;
+    } else {
+      throw new Error("Invalid response from the server");
+    }
+  } catch (error) {
+    console.error("Get Revisit Data error:", error);
+    throw (
+      error.response?.data || "An error occurred while fetching revisit data."
+    );
+  }
+};
+
 export default authApi;

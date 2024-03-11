@@ -24,6 +24,7 @@ import {
 } from "react-native-heroicons/outline";
 import PatientDetails from "./src/Components/PatientDetails";
 import EditPatientDetails from "./src/Components/EditPatientDetails";
+import Revisit from "./src/Components/Revisit";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -166,9 +167,24 @@ const App = () => {
             component={EditPatientDetails}
             options={{
               headerShown: true,
-              title: "Patient Details",
+              title: "Edit Patient Details",
               headerStyle: {
                 backgroundColor: "#008bff",
+              },
+              headerTintColor: "white",
+              headerTitleStyle: {
+                fontWeight: "bold",
+              },
+            }}
+          />
+          <Stack.Screen
+            name="Revisit"
+            component={Revisit}
+            options={{
+              headerShown: true,
+              title: "Revisit Entry",
+              headerStyle: {
+                backgroundColor: "orange",
               },
               headerTintColor: "white",
               headerTitleStyle: {

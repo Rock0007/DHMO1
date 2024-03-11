@@ -11,7 +11,11 @@ import {
   ToastAndroid,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { getAllPatientDetails, deletePatientById } from "../Api/authAPI";
+import {
+  getAllPatientDetails,
+  deletePatientById,
+  getRevisitData,
+} from "../Api/authAPI";
 import {
   MagnifyingGlassIcon,
   PencilSquareIcon,
@@ -32,7 +36,18 @@ const PatientLogs = () => {
         const sortedData = data.patients.sort(
           (a, b) => new Date(b.date) - new Date(a.date)
         );
-        setPatientData(sortedData || []);
+
+        // Fetch revisit data for each patient
+        const patientsWithRevisitData = await Promise.all(
+          sortedData.map(async (patient) => {
+            const revisitData = await getRevisitData(
+              patient?.phoneNumber || ""
+            );
+            return { ...patient, revisitData };
+          })
+        );
+
+        setPatientData(patientsWithRevisitData || []);
       } catch (error) {
         console.error("Error fetching all patient details:", error);
       } finally {
@@ -83,6 +98,10 @@ const PatientLogs = () => {
         },
       ]
     );
+  };
+
+  const handleRevisitPress = () => {
+    navigation.navigate("Revisit");
   };
 
   const renderPatientCard = (patient, index) => (
@@ -162,9 +181,20 @@ const PatientLogs = () => {
           value={searchQuery}
         />
       </View>
-      <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
-        <Text style={styles.updateButtonText}>Update Patient Details</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[styles.button, styles.updateButton]}
+          onPress={handleUpdate}
+        >
+          <Text style={styles.buttonText}>Reload Patient Logs</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.revisitButton]}
+          onPress={handleRevisitPress}
+        >
+          <Text style={styles.buttonText}>Revisit</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.cardContainer}>
         {filteredPatientData.length > 0 ? (
           filteredPatientData.map((patient, index) =>
@@ -272,6 +302,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
     borderRadius: 10,
     marginTop: 10,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  button: {
+    flex: 1,
+    alignItems: "center",
+    padding: 10,
+    borderRadius: 5,
+    marginRight: 5,
+  },
+  updateButton: {
+    backgroundColor: "#007bff",
+  },
+  revisitButton: {
+    backgroundColor: "orange",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 

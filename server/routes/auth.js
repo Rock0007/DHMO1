@@ -15,6 +15,8 @@ const {
   getPatientDetailsById,
   editPatientDetailsById,
   deletePatientById,
+  revisits,
+  getRevisits,
 } = require("../controllers/authController");
 
 router.use(
@@ -36,5 +38,7 @@ router.get("/patientdetails", authenticateToken, getPatientDetails);
 router.get("/patientdetails/:id", authenticateToken, getPatientDetailsById);
 router.put("/patientdetails/:id", authenticateToken, editPatientDetailsById);
 router.delete("/patientdetails/:id", authenticateToken, deletePatientById);
+router.post("/revisits", authenticateToken, revisits);
+router.get("/revisits/:phoneNumber", authenticateToken, getRevisits);
 
 module.exports = router;
