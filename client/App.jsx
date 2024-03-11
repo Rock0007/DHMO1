@@ -22,6 +22,8 @@ import {
   PlusCircleIcon,
   ArrowLeftStartOnRectangleIcon,
 } from "react-native-heroicons/outline";
+import PatientDetails from "./src/Components/PatientDetails";
+import EditPatientDetails from "./src/Components/EditPatientDetails";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -135,6 +137,36 @@ const App = () => {
             options={{
               headerShown: true,
               title: "Edit Profile",
+              headerStyle: {
+                backgroundColor: "#008bff",
+              },
+              headerTintColor: "white",
+              headerTitleStyle: {
+                fontWeight: "bold",
+              },
+            }}
+          />
+          <Stack.Screen
+            name="Patient Details"
+            component={PatientDetails}
+            options={{
+              headerShown: true,
+              title: "Patient Details",
+              headerStyle: {
+                backgroundColor: "#008bff",
+              },
+              headerTintColor: "white",
+              headerTitleStyle: {
+                fontWeight: "bold",
+              },
+            }}
+          />
+          <Stack.Screen
+            name="Edit PatientDetails"
+            component={EditPatientDetails}
+            options={{
+              headerShown: true,
+              title: "Patient Details",
               headerStyle: {
                 backgroundColor: "#008bff",
               },

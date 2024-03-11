@@ -12,6 +12,9 @@ const {
   checkExistingRecord,
   PatientEntry,
   getPatientDetails,
+  getPatientDetailsById,
+  editPatientDetailsById,
+  deletePatientById,
 } = require("../controllers/authController");
 
 router.use(
@@ -30,5 +33,8 @@ router.put("/staff/edit", authenticateToken, editProfile);
 router.get("/checkexistingrecord/:field/:value", checkExistingRecord);
 router.post("/patiententry", authenticateToken, PatientEntry);
 router.get("/patientdetails", authenticateToken, getPatientDetails);
+router.get("/patientdetails/:id", authenticateToken, getPatientDetailsById);
+router.put("/patientdetails/:id", authenticateToken, editPatientDetailsById);
+router.delete("/patientdetails/:id", authenticateToken, deletePatientById);
 
 module.exports = router;

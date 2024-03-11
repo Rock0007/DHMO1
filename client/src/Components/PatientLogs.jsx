@@ -7,11 +7,19 @@ import {
   ActivityIndicator,
   TextInput,
   TouchableOpacity,
+  Alert,
+  ToastAndroid,
 } from "react-native";
-import { getAllPatientDetails } from "../Api/authAPI";
-import { MagnifyingGlassIcon } from "react-native-heroicons/outline";
+import { useNavigation } from "@react-navigation/native";
+import { getAllPatientDetails, deletePatientById } from "../Api/authAPI";
+import {
+  MagnifyingGlassIcon,
+  PencilSquareIcon,
+  TrashIcon,
+} from "react-native-heroicons/outline";
 
 const PatientLogs = () => {
+  const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [patientData, setPatientData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,11 +47,50 @@ const PatientLogs = () => {
     setSearchQuery(query);
   };
 
+  const handlePatientCardPress = (patient) => {
+    navigation.navigate("Patient Details", { patient });
+  };
+
+  const handleEditPatient = (patient) => {
+    navigation.navigate("Edit PatientDetails", { patient });
+  };
+
+  const handleDeletePatient = async (patient) => {
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this patient?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: async () => {
+            try {
+              await deletePatientById(patient._id);
+              ToastAndroid.show("Patient Deleted", ToastAndroid.SHORT);
+              handleUpdate();
+              navigation.navigate("Patient Entry");
+            } catch (error) {
+              console.error("Error deleting patient:", error);
+              Alert.alert(
+                "Error",
+                "An error occurred while deleting the patient."
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderPatientCard = (patient, index) => (
     <TouchableOpacity
       key={index}
       style={styles.patientContainer}
       activeOpacity={0.2}
+      onPress={() => handlePatientCardPress(patient)}
     >
       <View style={styles.space}>
         <Text style={styles.patientHeading}>Patient ID:</Text>
@@ -64,8 +111,20 @@ const PatientLogs = () => {
       </View>
       <View style={styles.space}>
         <Text style={styles.keyField}>Date:</Text>
-        <Text>{patient.date}</Text>
+        <Text style={styles.DateText}>{patient.date}</Text>
       </View>
+      <TouchableOpacity
+        style={styles.editIconContainer}
+        onPress={() => handleEditPatient(patient)}
+      >
+        <PencilSquareIcon size={24} color="gray" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.deleteIconContainer}
+        onPress={() => handleDeletePatient(patient)}
+      >
+        <TrashIcon size={24} color="red" />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 
@@ -112,7 +171,14 @@ const PatientLogs = () => {
             renderPatientCard(patient, index)
           )
         ) : (
-          <Text style={styles.noMatchingFields}>No matching fields</Text>
+          <TouchableOpacity
+            style={styles.noPatientsContainer}
+            onPress={() => navigation.navigate("Patient Entry")}
+          >
+            <Text style={styles.noMatchingFields}>
+              No patients data. Tap here to Add a new patient.
+            </Text>
+          </TouchableOpacity>
         )}
       </View>
     </ScrollView>
@@ -184,6 +250,28 @@ const styles = StyleSheet.create({
   updateButtonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  DateText: {
+    color: "darkorange",
+    fontWeight: "bold",
+  },
+  editIconContainer: {
+    position: "absolute",
+    top: 20,
+    right: 60,
+  },
+  deleteIconContainer: {
+    position: "absolute",
+    top: 20,
+    right: 20,
+  },
+  noPatientsContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+    backgroundColor: "#eee",
+    borderRadius: 10,
+    marginTop: 10,
   },
 });
 

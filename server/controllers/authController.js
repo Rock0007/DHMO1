@@ -85,9 +85,7 @@ const signup = async (req, res) => {
       password: hashedPassword,
       confirmPassword: hashedConfirmPassword,
     });
-
     await staffMember.save();
-
     res.status(201).json({ message: "Staff member registered successfully" });
   } catch (error) {
     console.error(error);
@@ -341,6 +339,100 @@ const getPatientDetails = async (req, res) => {
   }
 };
 
+//Get Patient Details By ID
+const getPatientDetailsById = async (req, res) => {
+  try {
+    const patientId = req.params.id;
+
+    const patient = await PatientDetails.findById(patientId);
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    res.status(200).json({
+      message: "Patient details retrieved successfully",
+      patient,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const editPatientDetailsById = async (req, res) => {
+  try {
+    const patientId = req.params.id;
+    const {
+      firstName,
+      lastName,
+      age,
+      gender,
+      isCovid19Positive,
+      phoneNumber,
+      diagnosis,
+      treatment,
+      otherInfo,
+    } = req.body;
+
+    if (!patientId) {
+      return res.status(400).json({ message: "Invalid update request." });
+    }
+
+    const updatedPatient = await PatientDetails.findByIdAndUpdate(
+      patientId,
+      {
+        firstName,
+        lastName: lastName || "",
+        age,
+        gender,
+        isCovid19Positive,
+        phoneNumber,
+        diagnosis,
+        treatment,
+        otherInfo,
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedPatient) {
+      return res.status(404).json({ message: "Patient not found." });
+    }
+
+    res.status(200).json({
+      message: "Patient details updated successfully",
+      patient: updatedPatient,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const deletePatientById = async (req, res) => {
+  try {
+    const patientId = req.params.id;
+
+    if (!patientId) {
+      return res.status(400).json({ message: "Invalid delete request." });
+    }
+
+    const deletedPatient = await PatientDetails.findByIdAndDelete(patientId);
+
+    if (!deletedPatient) {
+      return res.status(404).json({ message: "Patient not found." });
+    }
+
+    res.status(200).json({
+      message: "Patient deleted successfully",
+      patient: deletedPatient,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   test,
   login,
@@ -351,4 +443,7 @@ module.exports = {
   checkExistingRecord,
   PatientEntry,
   getPatientDetails,
+  getPatientDetailsById,
+  editPatientDetailsById,
+  deletePatientById,
 };

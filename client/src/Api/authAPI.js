@@ -1,7 +1,7 @@
 import axios from "axios";
 import { BASE_URL } from "@env";
 
-const baseURL = `${BASE_URL}`;
+const baseURL = "http://10.106.27.240:8000";
 
 const authApi = axios.create({
   baseURL,
@@ -124,6 +124,51 @@ export const getAllPatientDetails = async () => {
       error.response?.data ||
       "An error occurred while fetching all patient details."
     );
+  }
+};
+
+export const getPatientDetailsById = async (patientId) => {
+  try {
+    const response = await authApi.get(`/patientdetails/${patientId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Get patient details by ID error:", error);
+    throw (
+      error.response?.data ||
+      "An error occurred while fetching patient details by ID."
+    );
+  }
+};
+
+export const updatePatientDetailsById = async (patientId, data) => {
+  try {
+    const response = await authApi.put(`/patientdetails/${patientId}`, data);
+
+    if (response && response.data) {
+      return response.data;
+    } else {
+      throw new Error("Invalid response from the server");
+    }
+  } catch (error) {
+    console.error("Update Patient Details error:", error);
+    throw (
+      error.response?.data || "An error occurred during patient details update."
+    );
+  }
+};
+
+export const deletePatientById = async (patientId) => {
+  try {
+    const response = await authApi.delete(`/patientdetails/${patientId}`);
+
+    if (response && response.data) {
+      return response.data;
+    } else {
+      throw new Error("Invalid response from the server");
+    }
+  } catch (error) {
+    console.error("Delete patient error:", error);
+    throw error.response?.data || "An error occurred during patient deletion.";
   }
 };
 
