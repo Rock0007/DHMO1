@@ -203,4 +203,39 @@ export const getRevisitData = async (phoneNumber) => {
   }
 };
 
+export const editRevisitById = async (phoneNumber, revisitId, data) => {
+  try {
+    const response = await authApi.put(
+      `/revisits/${phoneNumber}/${revisitId}`,
+      data
+    );
+
+    if (response && response.data) {
+      return response.data;
+    } else {
+      throw new Error("Invalid response from the server");
+    }
+  } catch (error) {
+    console.error("Edit Revisit error:", error);
+    throw error.response?.data || "An error occurred during revisit update.";
+  }
+};
+
+export const deleteRevisitById = async (phoneNumber, revisitId) => {
+  try {
+    const response = await authApi.delete(
+      `/revisits/${phoneNumber}/${revisitId}`
+    );
+
+    if (response && response.data) {
+      return response.data;
+    } else {
+      throw new Error("Invalid response from the server");
+    }
+  } catch (error) {
+    console.error("Delete Revisit error:", error);
+    throw error.response?.data || "An error occurred during revisit deletion.";
+  }
+};
+
 export default authApi;

@@ -6,10 +6,16 @@ import {
   ScrollView,
   ActivityIndicator,
   TextInput,
+  ToastAndroid,
+  Alert,
 } from "react-native";
-import { MagnifyingGlassIcon } from "react-native-heroicons/outline";
+import {
+  MagnifyingGlassIcon,
+  TrashIcon,
+  PencilSquareIcon,
+} from "react-native-heroicons/outline";
 import { Card } from "react-native-paper";
-import { getRevisitData } from "../Api/authAPI";
+import { getRevisitData, deleteRevisitById } from "../Api/authAPI";
 
 const PatientDetails = ({ route }) => {
   const { patient } = route.params;
@@ -33,6 +39,42 @@ const PatientDetails = ({ route }) => {
     fetchRevisitData();
   }, [patient?.phoneNumber]);
 
+  const handleDeleteRevisit = async (phoneNumber, revisitId) => {
+    try {
+      const result = await deleteRevisitById(phoneNumber, revisitId);
+      if (result && result.message === "Revisit deleted successfully") {
+        ToastAndroid.show("Revisit deleted successfully", ToastAndroid.SHORT);
+        const updatedRevisitData = revisitData.filter(
+          (revisit) => revisit._id !== revisitId
+        );
+        setRevisitData(updatedRevisitData);
+      } else {
+        throw new Error(result?.message || "Unknown error occurred");
+      }
+    } catch (error) {
+      console.error("Delete Revisit error:", error);
+      ToastAndroid.show("Error deleting revisit", ToastAndroid.SHORT);
+    }
+  };
+
+  const confirmDelete = (phoneNumber, revisitId) => {
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this revisit entry?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          onPress: () => handleDeleteRevisit(phoneNumber, revisitId),
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
   const filteredRevisitData = revisitData.filter((revisit) => {
     const query = searchQuery.toLowerCase();
     return (
@@ -44,7 +86,6 @@ const PatientDetails = ({ route }) => {
   });
 
   const sortedRevisitData = filteredRevisitData.sort((a, b) => {
-    // Assuming "date" and "time" are strings in the format "YYYY-MM-DD" and "HH:mm"
     const dateTimeA = new Date(`${a.date} ${a.time}`);
     const dateTimeB = new Date(`${b.date} ${b.time}`);
     return dateTimeB - dateTimeA;
@@ -132,40 +173,62 @@ const PatientDetails = ({ route }) => {
         </View>
       </View>
       <View style={styles.revisitContainer}>
-        <Text style={styles.heading}>Patient Visits</Text>
-        <View style={styles.searchContainer}>
-          <MagnifyingGlassIcon name="pencil-square" size={18} color="gray" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by Diagnosis, Treatment, Date"
-            value={searchQuery}
-            onChangeText={(text) => setSearchQuery(text)}
-          />
-        </View>
+        {sortedRevisitData.length > 0 && (
+          <View style={styles.revisitContainer}>
+            <Text style={styles.heading}>Patient Visits</Text>
+            <View style={styles.searchContainer}>
+              <MagnifyingGlassIcon
+                name="pencil-square"
+                size={18}
+                color="gray"
+              />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search by Diagnosis, Treatment, Date"
+                value={searchQuery}
+                onChangeText={(text) => setSearchQuery(text)}
+              />
+            </View>
 
-        {loadingRevisitData ? (
-          <ActivityIndicator size="large" color="#007bff" />
-        ) : sortedRevisitData.length > 0 ? (
-          sortedRevisitData.map((revisit, index) => (
-            <Card key={index} style={styles.revisitCard}>
-              <Text style={styles.Colorlabel}>Diagnosis</Text>
-              <Text style={styles.detail}>{revisit.diagnosis}</Text>
+            {loadingRevisitData ? (
+              <ActivityIndicator size="large" color="#007bff" />
+            ) : sortedRevisitData.length > 0 ? (
+              sortedRevisitData.map((revisit, index) => (
+                <Card key={index} style={styles.revisitCard}>
+                  <View style={styles.revisitCardHeader}>
+                    <TrashIcon
+                      name="trash"
+                      size={24}
+                      color="red"
+                      style={styles.cardIcon}
+                      onPress={() =>
+                        confirmDelete(patient?.phoneNumber, revisit._id)
+                      }
+                    />
+                  </View>
 
-              <Text style={styles.Colorlabel}>Treatment</Text>
-              <Text style={styles.detail}>{revisit.treatment}</Text>
+                  <Text style={styles.Colorlabel}>Diagnosis</Text>
+                  <Text style={styles.detail}>{revisit.diagnosis}</Text>
 
-              <Text style={styles.Colorlabel}>Other Info</Text>
-              <Text style={styles.detail}>{revisit.otherInfo}</Text>
+                  <Text style={styles.Colorlabel}>Treatment</Text>
+                  <Text style={styles.detail}>{revisit.treatment}</Text>
 
-              <Text style={styles.label}>Date</Text>
-              <Text style={styles.DateText}>{revisit.date}</Text>
-
-              <Text style={styles.label}>Time</Text>
-              <Text style={styles.DateText}>{revisit.time}</Text>
-            </Card>
-          ))
-        ) : (
-          <Text>No matching revisit data found.</Text>
+                  <Text style={styles.Colorlabel}>Other Info</Text>
+                  <Text style={styles.detail}>{revisit.otherInfo}</Text>
+                  <View style={styles.inlineContainer}>
+                    <View style={styles.inlineDetailContainer}>
+                      <Text style={styles.label}>Date</Text>
+                      <Text style={styles.DateText}>{revisit.date}</Text>
+                    </View>
+                    <View style={styles.inlineDetailContainer}>
+                      <Text style={styles.label}>Time</Text>
+                      <Text style={styles.DateText}>{revisit.time}</Text>
+                    </View>
+                  </View>
+                </Card>
+              ))
+            ) : null}
+          </View>
         )}
       </View>
     </ScrollView>
@@ -179,7 +242,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
-    margin: 25,
+    margin: 20,
     alignItems: "center",
     elevation: 3,
   },
@@ -205,10 +268,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   revisitContainer: {
-    margin: 25,
+    margin: 10,
   },
   revisitCard: {
-    marginBottom: 15,
+    marginBottom: 20,
     padding: 15,
     borderRadius: 10,
     borderWidth: 1,
@@ -257,6 +320,28 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: 40,
+    marginLeft: 10,
+  },
+  noDataContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+    borderRadius: 10,
+    padding: 20,
+    margin: 20,
+    elevation: 3,
+  },
+  noDataText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "gray",
+  },
+  revisitCardHeader: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  cardIcon: {
     marginLeft: 10,
   },
 });

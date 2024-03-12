@@ -537,6 +537,104 @@ const getRevisits = async (req, res) => {
   }
 };
 
+// Edit Revisit
+const editRevisit = async (req, res) => {
+  try {
+    const { phoneNumber, revisitId } = req.params;
+    const { diagnosis, treatment, otherInfo } = req.body;
+
+    if (!/^\d{10}$/.test(phoneNumber)) {
+      return res.status(400).json({
+        message:
+          "Invalid phoneNumber format. Please provide exactly 10 digits.",
+      });
+    }
+
+    const existingPatient = await PatientDetails.findOne({ phoneNumber });
+
+    if (!existingPatient) {
+      return res.status(404).json({
+        message: "Patient with this phoneNumber does not exist.",
+      });
+    }
+
+    const revisitToUpdate = existingPatient.revisits.id(revisitId);
+
+    if (!revisitToUpdate) {
+      return res.status(404).json({
+        message: "Revisit with this ID does not exist.",
+      });
+    }
+
+    revisitToUpdate.diagnosis = diagnosis || revisitToUpdate.diagnosis;
+    revisitToUpdate.treatment = treatment || revisitToUpdate.treatment;
+    revisitToUpdate.otherInfo = otherInfo || revisitToUpdate.otherInfo;
+
+    const updatedPatient = await existingPatient.save();
+
+    return res.status(200).json({
+      message: "Revisit updated successfully",
+      patient: updatedPatient,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Delete Revisit
+const deleteRevisit = async (req, res) => {
+  try {
+    const { phoneNumber, revisitId } = req.params;
+
+    if (!/^\d{10}$/.test(phoneNumber)) {
+      return res.status(400).json({
+        message:
+          "Invalid phoneNumber format. Please provide exactly 10 digits.",
+      });
+    }
+
+    const existingPatient = await PatientDetails.findOne({ phoneNumber });
+
+    if (!existingPatient) {
+      return res.status(404).json({
+        message: "Patient with this phoneNumber does not exist.",
+      });
+    }
+
+    const revisitIndex = existingPatient.revisits.findIndex(
+      (revisit) => revisit._id.toString() === revisitId
+    );
+
+    if (revisitIndex === -1) {
+      return res.status(404).json({
+        message: "Revisit with this ID does not exist.",
+      });
+    }
+
+    existingPatient.revisits.splice(revisitIndex, 1);
+    const updatedPatient = await existingPatient.save();
+
+    return res.status(200).json({
+      message: "Revisit deleted successfully",
+      patient: updatedPatient,
+    });
+  } catch (error) {
+    console.error(error);
+
+    if (error.name === "ValidationError") {
+      const errorMessages = Object.values(error.errors).map(
+        (err) => err.message
+      );
+      return res
+        .status(400)
+        .json({ message: "Validation error", errors: errorMessages });
+    }
+
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   test,
   login,
@@ -552,4 +650,6 @@ module.exports = {
   deletePatientById,
   revisits,
   getRevisits,
+  editRevisit,
+  deleteRevisit,
 };
