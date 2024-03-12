@@ -9,11 +9,7 @@ import {
   ToastAndroid,
   Alert,
 } from "react-native";
-import {
-  MagnifyingGlassIcon,
-  TrashIcon,
-  PencilSquareIcon,
-} from "react-native-heroicons/outline";
+import { MagnifyingGlassIcon, TrashIcon } from "react-native-heroicons/outline";
 import { Card } from "react-native-paper";
 import { getRevisitData, deleteRevisitById } from "../Api/authAPI";
 

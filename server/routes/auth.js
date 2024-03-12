@@ -19,6 +19,8 @@ const {
   getRevisits,
   editRevisit,
   deleteRevisit,
+  editStaffProfile,
+  deleteStaffProfile,
 } = require("../controllers/authController");
 
 router.use(
@@ -48,5 +50,10 @@ router.delete(
   authenticateToken,
   deleteRevisit
 );
-
+router.put("/edit/staff/:phoneNumber", authenticateToken, editStaffProfile);
+router.delete(
+  "/remove/staff/:phoneNumber",
+  authenticateToken,
+  deleteStaffProfile
+);
 module.exports = router;

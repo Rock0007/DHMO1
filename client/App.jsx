@@ -3,6 +3,16 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
 import { UserProvider } from "./src/Contexts/userContext";
+import {
+  HomeIcon,
+  UserPlusIcon,
+  CheckCircleIcon,
+  QueueListIcon,
+  EyeIcon,
+  PlusCircleIcon,
+  ArrowLeftStartOnRectangleIcon,
+  UserCircleIcon,
+} from "react-native-heroicons/outline";
 import Login from "./src/Auth/Login";
 import Home from "./src/Components/Home";
 import LeftNavbar from "./src/Components/LeftNavbar";
@@ -13,18 +23,11 @@ import ViewAttendance from "./src/Components/ViewAttendance";
 import AddStaff from "./src/Components/AddStaff";
 import Logout from "./src/Auth/Logout";
 import EditProfile from "./src/Components/EditProfile";
-import {
-  HomeIcon,
-  UserPlusIcon,
-  CheckCircleIcon,
-  QueueListIcon,
-  EyeIcon,
-  PlusCircleIcon,
-  ArrowLeftStartOnRectangleIcon,
-} from "react-native-heroicons/outline";
 import PatientDetails from "./src/Components/PatientDetails";
 import EditPatientDetails from "./src/Components/EditPatientDetails";
 import Revisit from "./src/Components/Revisit";
+import StaffLogs from "./src/Components/StaffLogs";
+import EditStaffDetails from "./src/Components/EditStaffDetails";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -99,6 +102,19 @@ const HomeDrawer = () => {
         options={{
           drawerIcon: ({ focused }) => (
             <PlusCircleIcon
+              name="home"
+              size={18}
+              color={focused ? "blue" : "black"}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Staff Logs"
+        component={StaffLogs}
+        options={{
+          drawerIcon: ({ focused }) => (
+            <UserCircleIcon
               name="home"
               size={18}
               color={focused ? "blue" : "black"}
@@ -183,6 +199,21 @@ const App = () => {
             options={{
               headerShown: true,
               title: "Revisit Entry",
+              headerStyle: {
+                backgroundColor: "orange",
+              },
+              headerTintColor: "white",
+              headerTitleStyle: {
+                fontWeight: "bold",
+              },
+            }}
+          />
+          <Stack.Screen
+            name="Edit Staff"
+            component={EditStaffDetails}
+            options={{
+              headerShown: true,
+              title: "Edit Staff",
               headerStyle: {
                 backgroundColor: "orange",
               },

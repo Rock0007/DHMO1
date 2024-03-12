@@ -195,7 +195,7 @@ const PatientEntry = ({}) => {
           />
 
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Submit</Text>
+            <Text style={styles.submitButtonText}>Save</Text>
           </TouchableOpacity>
         </View>
       </View>

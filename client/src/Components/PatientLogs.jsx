@@ -20,6 +20,7 @@ import {
   MagnifyingGlassIcon,
   PencilSquareIcon,
   TrashIcon,
+  ArrowPathIcon,
 } from "react-native-heroicons/outline";
 
 const PatientLogs = () => {
@@ -115,21 +116,27 @@ const PatientLogs = () => {
         <Text style={styles.greenText}>{patient._id}</Text>
       </View>
 
-      <View style={styles.space}>
-        <Text style={styles.keyField}>Patient Name:</Text>
-        <Text>{`${patient.firstName} ${patient.lastName}`}</Text>
+      <View style={styles.inlineContainer}>
+        <View style={styles.inlineDetailContainer}>
+          <Text style={styles.keyField}>Name:</Text>
+          <Text>{`${patient.firstName} ${patient.lastName}`}</Text>
+        </View>
+
+        <View style={styles.inlineDetailContainer}>
+          <Text style={styles.keyField}>Age:</Text>
+          <Text>{patient.age}</Text>
+        </View>
       </View>
-      <View style={styles.space}>
-        <Text style={styles.keyField}>Age:</Text>
-        <Text>{patient.age}</Text>
-      </View>
-      <View style={styles.space}>
-        <Text style={styles.keyField}>Mobile Number:</Text>
-        <Text>{patient.phoneNumber}</Text>
-      </View>
-      <View style={styles.space}>
-        <Text style={styles.keyField}>Date:</Text>
-        <Text style={styles.DateText}>{patient.date}</Text>
+
+      <View style={styles.inlineContainer}>
+        <View style={styles.inlineDetailContainer}>
+          <Text style={styles.keyField}>Mobile Number:</Text>
+          <Text>{patient.phoneNumber}</Text>
+        </View>
+        <View style={styles.inlineDetailContainer}>
+          <Text style={styles.keyField}>Date:</Text>
+          <Text style={styles.DateText}>{patient.date}</Text>
+        </View>
       </View>
       <TouchableOpacity
         style={styles.editIconContainer}
@@ -185,8 +192,14 @@ const PatientLogs = () => {
           style={[styles.button, styles.updateButton]}
           onPress={handleUpdate}
         >
-          <Text style={styles.buttonText}>Reload Patient Logs</Text>
+          <View style={styles.buttonContent}>
+            <ArrowPathIcon name="pencil-square" size={18} color="white" />
+            <Text style={[styles.buttonText, { marginLeft: 8 }]}>
+              Patient Logs
+            </Text>
+          </View>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={[styles.button, styles.revisitButton]}
           onPress={handleRevisitPress}
@@ -262,6 +275,7 @@ const styles = StyleSheet.create({
   },
   space: {
     marginTop: 10,
+    marginBottom: 15,
   },
   noMatchingFields: {
     textAlign: "center",
@@ -323,6 +337,19 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  inlineContainer: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    marginBottom: 15,
+  },
+  inlineDetailContainer: {
+    flex: 1,
   },
 });
 

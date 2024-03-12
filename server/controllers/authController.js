@@ -635,6 +635,127 @@ const deleteRevisit = async (req, res) => {
   }
 };
 
+// Edit Staff Profile
+const editStaffProfile = async (req, res) => {
+  try {
+    const { phoneNumber } = req.params;
+    const {
+      fullName,
+      newPhoneNumber,
+      gmail,
+      password,
+      confirmPassword,
+      aadharID,
+      role,
+      phcName,
+      phcID,
+      subcenterName,
+      subcenterID,
+    } = req.body;
+
+    const phoneNumberRegex = /^\d{10}$/;
+    if (!phoneNumberRegex.test(phoneNumber)) {
+      return res.status(400).json({ error: "Invalid mobile number format" });
+    }
+
+    const newPhoneNumberRegex = /^\d{10}$/;
+    if (!newPhoneNumberRegex.test(newPhoneNumber)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid new mobile number format" });
+    }
+
+    const gmailRegex = /^[a-zA-Z0-9_.]+@gmail\.com$/i;
+    if (!gmailRegex.test(gmail)) {
+      return res.status(400).json({ error: "Invalid Gmail format" });
+    }
+
+    const existingUserPhoneNumber = await SubCenterStaff.findOne({
+      $and: [
+        { phoneNumber: newPhoneNumber },
+        { phoneNumber: { $ne: phoneNumber } },
+      ],
+    });
+
+    if (existingUserPhoneNumber) {
+      return res.status(400).json({
+        error: "Mobile number is already registered by another user",
+      });
+    }
+
+    const existingUserGmail = await SubCenterStaff.findOne({
+      $and: [{ phoneNumber: newPhoneNumber }, { gmail }],
+    });
+
+    if (existingUserGmail) {
+      return res.status(400).json({
+        error: "Gmail is already registered by another user",
+      });
+    }
+
+    // Create an update object with only the provided fields
+    const update = {
+      fullName,
+      phoneNumber: newPhoneNumber,
+      gmail,
+    };
+
+    // Add optional fields to the update object if provided
+    if (aadharID) update.aadharID = aadharID;
+    if (role) update.role = role;
+    if (phcName) update.phcName = phcName;
+    if (phcID) update.phcID = phcID;
+    if (subcenterName) update.subcenterName = subcenterName;
+    if (subcenterID) update.subcenterID = subcenterID;
+    if (password) update.password = await hashPassword(password);
+    if (confirmPassword)
+      update.confirmPassword = await hashPassword(confirmPassword);
+
+    const updatedStaff = await SubCenterStaff.findOneAndUpdate(
+      { phoneNumber },
+      { $set: update },
+      { new: true }
+    );
+
+    if (!updatedStaff) {
+      return res.status(404).json({ error: "Staff member not found" });
+    }
+
+    const response = {
+      _id: updatedStaff._id,
+      fullName: updatedStaff.fullName,
+      phoneNumber: updatedStaff.phoneNumber,
+      aadharID: updatedStaff.aadharID,
+      role: updatedStaff.role,
+      phcName: updatedStaff.phcName,
+      phcID: updatedStaff.phcID,
+      subcenterName: updatedStaff.subcenterName,
+      subcenterID: updatedStaff.subcenterID,
+      gmail: updatedStaff.gmail,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Delete Staff Profile
+const deleteStaffProfile = async (req, res) => {
+  try {
+    const { phoneNumber } = req.params;
+    const deletedStaff = await SubCenterStaff.findOneAndDelete({ phoneNumber });
+    if (!deletedStaff) {
+      return res.status(404).json({ error: "Staff member not found" });
+    }
+    res.status(200).json({ message: "Staff member deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   test,
   login,
@@ -652,4 +773,6 @@ module.exports = {
   getRevisits,
   editRevisit,
   deleteRevisit,
+  editStaffProfile,
+  deleteStaffProfile,
 };
