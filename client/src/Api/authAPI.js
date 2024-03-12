@@ -1,7 +1,7 @@
 import axios from "axios";
 import { BASE_URL } from "@env";
 
-const baseURL = "http://10.106.27.240:8000";
+const baseURL = "http://10.106.29.2:8000";
 
 const authApi = axios.create({
   baseURL,

@@ -37,7 +37,6 @@ const PatientLogs = () => {
           (a, b) => new Date(b.date) - new Date(a.date)
         );
 
-        // Fetch revisit data for each patient
         const patientsWithRevisitData = await Promise.all(
           sortedData.map(async (patient) => {
             const revisitData = await getRevisitData(

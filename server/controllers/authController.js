@@ -475,7 +475,6 @@ const revisits = async (req, res) => {
       diagnosis: diagnosis || "",
       treatment: treatment || "",
       otherInfo: otherInfo || "",
-      date: new Date(),
     });
 
     const updatedPatient = await existingPatient.save();
