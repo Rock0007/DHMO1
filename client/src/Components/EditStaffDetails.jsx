@@ -1,5 +1,4 @@
-// EditStaffDetails.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -11,7 +10,10 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 
-const EditStaffDetails = ({ navigation }) => {
+const EditStaffDetails = ({ navigation, route }) => {
+  const { staffId } = route.params;
+  const [staff, setStaff] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [fullName, setFullName] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
@@ -52,9 +54,7 @@ const EditStaffDetails = ({ navigation }) => {
       );
       navigation.navigate("Home");
     } catch (error) {
-      // Handle errors
       console.error(error);
-      // You can add more specific error handling here
       ToastAndroid.show("Failed to update staff details", ToastAndroid.SHORT);
     }
   };
@@ -191,6 +191,7 @@ const EditStaffDetails = ({ navigation }) => {
   );
 };
 
+// Define styles for the component
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -201,12 +202,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 30,
     marginTop: 50,
-  },
-  heading: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
   },
   formContainer: {
     width: "90%",
@@ -222,13 +217,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  nameInput: {
-    flex: 1,
-    height: 40,
-    borderColor: "gray",
-    borderWidth: 1,
-    marginRight: 10,
-    padding: 10,
+  heading: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
   },
   input: {
     height: 40,

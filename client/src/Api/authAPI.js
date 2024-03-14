@@ -249,7 +249,7 @@ export const editStaffProfile = async (phoneNumber, data) => {
 
 export const deleteStaffProfile = async (phoneNumber) => {
   try {
-    const response = await authApi.delete(`/delete/staff/${phoneNumber}`);
+    const response = await authApi.delete(`/remove/staff/${phoneNumber}`);
     return response.data;
   } catch (error) {
     throw error.response.data;
