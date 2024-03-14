@@ -274,4 +274,13 @@ export const getAllStaffProfiles = async () => {
   }
 };
 
+export const setLocation = async (locationData) => {
+  try {
+    const response = await authApi.post("/set/location", locationData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response.data.message || "Failed to set location");
+  }
+};
+
 export default authApi;

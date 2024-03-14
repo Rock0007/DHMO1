@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const SubCenterStaff = require("../models/scStaff");
 const PatientDetails = require("../models/PatientDetails");
+const Location = require("../models/Location");
 const { hashPassword, comparePassword } = require("../helpers/auth");
 
 // Test
@@ -768,6 +769,57 @@ const getAllStaffProfiles = async (req, res) => {
   }
 };
 
+//SET Geo Location
+const setLocation = async (req, res) => {
+  try {
+    const { phcName, subCenterName, district, pincode, longitude, latitude } =
+      req.body;
+
+    const pincodeRegex = /^\d{6}$/;
+    if (!pincodeRegex.test(pincode)) {
+      return res
+        .status(400)
+        .json({ message: "Pincode must contain 6 numeric digits" });
+    }
+
+    const coordinateRegex = /^-?\d+(\.\d+)?$/;
+    if (!coordinateRegex.test(latitude) || !coordinateRegex.test(longitude)) {
+      return res
+        .status(400)
+        .json({ message: "Latitude and Longitude must be numeric with dot" });
+    }
+
+    if (
+      !phcName ||
+      !subCenterName ||
+      !district ||
+      !pincode ||
+      !longitude ||
+      !latitude
+    ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const newLocation = new Location({
+      phcName,
+      subCenterName,
+      district,
+      pincode,
+      longitude,
+      latitude,
+    });
+
+    await newLocation.save();
+
+    res
+      .status(201)
+      .json({ message: "Location added successfully", location: newLocation });
+  } catch (error) {
+    console.error("Error adding location:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   test,
   login,
@@ -788,4 +840,5 @@ module.exports = {
   editStaffProfile,
   deleteStaffProfile,
   getAllStaffProfiles,
+  setLocation,
 };

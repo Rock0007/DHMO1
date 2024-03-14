@@ -22,6 +22,7 @@ const {
   editStaffProfile,
   deleteStaffProfile,
   getAllStaffProfiles,
+  setLocation,
 } = require("../controllers/authController");
 
 router.use(
@@ -35,7 +36,7 @@ router.get("/", test);
 router.post("/login", login);
 router.get("/profile", authenticateToken, getProfile);
 router.post("/signup", signup);
-router.delete("/logout", authenticateToken, logout);
+router.delete("/logout", logout);
 router.put("/staff/edit", authenticateToken, editProfile);
 router.get("/checkexistingrecord/:field/:value", checkExistingRecord);
 router.post("/patiententry", authenticateToken, PatientEntry);
@@ -58,4 +59,6 @@ router.delete(
   authenticateToken,
   deleteStaffProfile
 );
+//Location
+router.post("/set/location", authenticateToken, setLocation);
 module.exports = router;

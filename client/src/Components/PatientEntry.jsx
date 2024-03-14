@@ -207,12 +207,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  menuIcon: {
-    fontSize: 25,
-    fontWeight: "bold",
-    padding: 20,
-    maxWidth: 10,
-  },
   contentContainer: {
     flex: 1,
     justifyContent: "flex-start",

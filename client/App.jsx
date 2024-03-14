@@ -12,6 +12,7 @@ import {
   PlusCircleIcon,
   ArrowLeftStartOnRectangleIcon,
   UserCircleIcon,
+  MapPinIcon,
 } from "react-native-heroicons/outline";
 import Login from "./src/Auth/Login";
 import Home from "./src/Components/Home";
@@ -28,6 +29,7 @@ import EditPatientDetails from "./src/Components/EditPatientDetails";
 import Revisit from "./src/Components/Revisit";
 import StaffLogs from "./src/Components/StaffLogs";
 import EditStaffDetails from "./src/Components/EditStaffDetails";
+import SetLocation from "./src/Components/SetLocation";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -115,6 +117,19 @@ const HomeDrawer = () => {
         options={{
           drawerIcon: ({ focused }) => (
             <UserCircleIcon
+              name="home"
+              size={18}
+              color={focused ? "blue" : "black"}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Set Location"
+        component={SetLocation}
+        options={{
+          drawerIcon: ({ focused }) => (
+            <MapPinIcon
               name="home"
               size={18}
               color={focused ? "blue" : "black"}
@@ -223,6 +238,7 @@ const App = () => {
               },
             }}
           />
+
           <Stack.Screen name="HomeDrawer" component={HomeDrawer} />
         </Stack.Navigator>
       </NavigationContainer>

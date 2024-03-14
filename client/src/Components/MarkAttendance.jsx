@@ -42,16 +42,29 @@ const MarkAttendance = () => {
     }
   };
 
-  const handleMarkAttendance = () => {
-    // Check if location is within the allowed coordinates
-    // You can add your logic here to compare the location coordinates with allowed coordinates
-    // For example:
-    // if (location.latitude === allowedLatitude && location.longitude === allowedLongitude) {
-    //    // Mark attendance
-    //    ToastAndroid.show('Attendance marked successfully', ToastAndroid.SHORT);
-    // } else {
-    //    ToastAndroid.show('You are not in the allowed location', ToastAndroid.SHORT);
-    // }
+  const handleMarkAttendance = () => {};
+
+  const isLocationMatching = (targetLatitude, targetLongitude) => {
+    if (!location) return false;
+
+    const R = 6371; // Radius of the Earth in kilometers
+    const lat1 = location.coords.latitude * (Math.PI / 180);
+    const lat2 = targetLatitude * (Math.PI / 180);
+    const lon1 = location.coords.longitude * (Math.PI / 180);
+    const lon2 = targetLongitude * (Math.PI / 180);
+
+    const dLat = lat2 - lat1;
+    const dLon = lon2 - lon1;
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const distance = R * c; // Distance in kilometers
+
+    return distance <= 1; // Within 1 km range
   };
 
   return (
@@ -66,6 +79,12 @@ const MarkAttendance = () => {
             <Text style={styles.locationValue}>
               {location.coords.latitude}, {location.coords.longitude}
             </Text>
+            {isLocationMatching(17.37466, 78.497849) ||
+            isLocationMatching(17.649816459442224, 77.79966112294039) ? null : (
+              <Text style={styles.locationNotMatchingText}>
+                Location not matching
+              </Text>
+            )}
           </View>
         ) : (
           <Text style={styles.locationText}>Location not available</Text>
@@ -101,6 +120,11 @@ const styles = StyleSheet.create({
   locationValue: {
     fontSize: 16,
     marginTop: 5,
+  },
+  locationNotMatchingText: {
+    fontSize: 16,
+    marginTop: 5,
+    color: "red",
   },
   button: {
     backgroundColor: "#007bff",
