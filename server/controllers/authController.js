@@ -654,15 +654,11 @@ const editStaffProfile = async (req, res) => {
     } = req.body;
 
     const phoneNumberRegex = /^\d{10}$/;
-    if (!phoneNumberRegex.test(phoneNumber)) {
+    if (
+      !phoneNumberRegex.test(phoneNumber) ||
+      !phoneNumberRegex.test(newPhoneNumber)
+    ) {
       return res.status(400).json({ error: "Invalid mobile number format" });
-    }
-
-    const newPhoneNumberRegex = /^\d{10}$/;
-    if (!newPhoneNumberRegex.test(newPhoneNumber)) {
-      return res
-        .status(400)
-        .json({ error: "Invalid new mobile number format" });
     }
 
     const gmailRegex = /^[a-zA-Z0-9_.]+@gmail\.com$/i;
@@ -693,23 +689,22 @@ const editStaffProfile = async (req, res) => {
       });
     }
 
-    // Create an update object with only the provided fields
     const update = {
       fullName,
       phoneNumber: newPhoneNumber,
       gmail,
+      aadharID,
+      role,
+      phcName,
+      phcID,
+      subcenterName,
+      subcenterID,
     };
 
-    // Add optional fields to the update object if provided
-    if (aadharID) update.aadharID = aadharID;
-    if (role) update.role = role;
-    if (phcName) update.phcName = phcName;
-    if (phcID) update.phcID = phcID;
-    if (subcenterName) update.subcenterName = subcenterName;
-    if (subcenterID) update.subcenterID = subcenterID;
-    if (password) update.password = await hashPassword(password);
-    if (confirmPassword)
+    if (password) {
+      update.password = await hashPassword(password);
       update.confirmPassword = await hashPassword(confirmPassword);
+    }
 
     const updatedStaff = await SubCenterStaff.findOneAndUpdate(
       { phoneNumber },
@@ -721,7 +716,7 @@ const editStaffProfile = async (req, res) => {
       return res.status(404).json({ error: "Staff member not found" });
     }
 
-    const response = {
+    res.status(200).json({
       _id: updatedStaff._id,
       fullName: updatedStaff.fullName,
       phoneNumber: updatedStaff.phoneNumber,
@@ -732,9 +727,7 @@ const editStaffProfile = async (req, res) => {
       subcenterName: updatedStaff.subcenterName,
       subcenterID: updatedStaff.subcenterID,
       gmail: updatedStaff.gmail,
-    };
-
-    res.status(200).json(response);
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -750,6 +743,25 @@ const deleteStaffProfile = async (req, res) => {
       return res.status(404).json({ error: "Staff member not found" });
     }
     res.status(200).json({ message: "Staff member deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// GET SC Staff profiles
+const getAllStaffProfiles = async (req, res) => {
+  try {
+    const allStaffProfiles = await SubCenterStaff.find();
+
+    if (!allStaffProfiles || allStaffProfiles.length === 0) {
+      return res.status(404).json({ message: "No staff profiles found" });
+    }
+
+    res.status(200).json({
+      message: "All staff profiles retrieved successfully",
+      staffProfiles: allStaffProfiles,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -775,4 +787,5 @@ module.exports = {
   deleteRevisit,
   editStaffProfile,
   deleteStaffProfile,
+  getAllStaffProfiles,
 };

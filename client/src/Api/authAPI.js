@@ -1,7 +1,7 @@
 import axios from "axios";
 import { BASE_URL } from "@env";
 
-const baseURL = "http://10.106.29.2:8000";
+const baseURL = "http://10.106.17.147:8000";
 
 const authApi = axios.create({
   baseURL,
@@ -235,6 +235,42 @@ export const deleteRevisitById = async (phoneNumber, revisitId) => {
   } catch (error) {
     console.error("Delete Revisit error:", error);
     throw error.response?.data || "An error occurred during revisit deletion.";
+  }
+};
+
+export const editStaffProfile = async (phoneNumber, data) => {
+  try {
+    const response = await authApi.put(`/edit/staff/${phoneNumber}`, data);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const deleteStaffProfile = async (phoneNumber) => {
+  try {
+    const response = await authApi.delete(`/delete/staff/${phoneNumber}`);
+    return response.data;
+  } catch (error) {
+    throw error.response.data;
+  }
+};
+
+export const getAllStaffProfiles = async () => {
+  try {
+    const response = await authApi.get("/staff/sc/profiles");
+
+    if (response && response.data) {
+      return response.data;
+    } else {
+      throw new Error("Invalid response from the server");
+    }
+  } catch (error) {
+    console.error("Get all staff profiles error:", error);
+    throw (
+      error.response?.data ||
+      "An error occurred while fetching all staff profiles."
+    );
   }
 };
 

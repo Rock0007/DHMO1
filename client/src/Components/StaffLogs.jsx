@@ -1,4 +1,3 @@
-// StaffLogs.js
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -8,6 +7,8 @@ import {
   ActivityIndicator,
   TextInput,
   TouchableOpacity,
+  Alert,
+  ToastAndroid,
 } from "react-native";
 import {
   MagnifyingGlassIcon,
@@ -15,22 +16,28 @@ import {
   PencilSquareIcon,
 } from "react-native-heroicons/outline";
 import { useNavigation } from "@react-navigation/native";
+import { getAllStaffProfiles, deleteStaffProfile } from "../Api/authAPI";
 
 const StaffLogs = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
-  const [staffData, setStaffData] = useState([
-    {
-      name: "Kapil A S",
-      subcenter: "Woxsen",
-      phoneNumber: "8247870716",
-    },
-    // Add more staff data as needed
-  ]);
+  const [staffData, setStaffData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    setLoading(false);
+    const fetchStaffProfiles = async () => {
+      try {
+        const response = await getAllStaffProfiles();
+        setStaffData(response.staffProfiles);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching staff profiles:", error);
+        setLoading(false);
+        ToastAndroid.show("Failed to fetch staff profiles", ToastAndroid.SHORT);
+      }
+    };
+
+    fetchStaffProfiles();
   }, []);
 
   const handleEditStaff = () => {
@@ -38,41 +45,77 @@ const StaffLogs = () => {
     navigation.navigate("Edit Staff");
   };
 
+  const handleDeleteStaff = (phoneNumber) => {
+    Alert.alert(
+      "Delete Staff",
+      "Are you sure you want to delete this staff member?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          onPress: async () => {
+            try {
+              await deleteStaffProfile(phoneNumber);
+              ToastAndroid.show(
+                "Staff member deleted successfully",
+                ToastAndroid.SHORT
+              );
+              // Refetch staff profiles after deletion
+              setLoading(true);
+              const response = await getAllStaffProfiles();
+              setStaffData(response.staffProfiles);
+              setLoading(false);
+            } catch (error) {
+              console.error("Error deleting staff member:", error);
+              ToastAndroid.show(
+                "Failed to delete staff member",
+                ToastAndroid.SHORT
+              );
+            }
+          },
+          style: "destructive",
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
   const handleSearchChange = (query) => {
     setSearchQuery(query);
   };
 
   const renderStaffCard = (staff, index) => (
-    <View key={index} style={styles.staffCard}>
-      <TouchableOpacity
-        style={styles.editIconContainer}
-        onPress={() => handleEditStaff(staff)}
-      >
-        <PencilSquareIcon size={24} color="gray" />
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.iconContainer}
-        onPress={() => handleDeletePatient(staff)}
-      >
-        <TrashIcon size={24} color="red" />
-      </TouchableOpacity>
-
+    <TouchableOpacity key={index} style={styles.staffCard}>
       <View style={styles.staffInfo}>
         <Text style={styles.staffLabel}>Name:</Text>
-        <Text>{staff.name}</Text>
+        <Text>{staff.fullName}</Text>
       </View>
 
       <View style={styles.staffInfo}>
         <Text style={styles.staffLabel}>Subcenter:</Text>
-        <Text>{staff.subcenter}</Text>
+        <Text>{staff.subcenterName}</Text>
       </View>
 
       <View style={styles.staffInfo}>
         <Text style={styles.staffLabel}>Phone Number:</Text>
         <Text>{staff.phoneNumber}</Text>
       </View>
-    </View>
+      <TouchableOpacity
+        style={styles.editIconContainer}
+        onPress={() => handleEditStaff()}
+      >
+        <PencilSquareIcon size={24} color="gray" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.deleteIconContainer}
+        onPress={() => handleDeleteStaff(staff.phoneNumber)}
+      >
+        <TrashIcon size={24} color="red" />
+      </TouchableOpacity>
+    </TouchableOpacity>
   );
 
   return (
@@ -146,6 +189,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 20,
     right: 60,
+  },
+  deleteIconContainer: {
+    position: "absolute",
+    top: 20,
+    right: 20,
   },
 });
 
