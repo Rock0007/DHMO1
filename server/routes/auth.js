@@ -23,6 +23,8 @@ const {
   deleteStaffProfile,
   getAllStaffProfiles,
   setLocation,
+  getLocation,
+  deleteLocation,
 } = require("../controllers/authController");
 
 router.use(
@@ -61,4 +63,11 @@ router.delete(
 );
 //Location
 router.post("/set/location", authenticateToken, setLocation);
+router.get("/get/location", authenticateToken, getLocation);
+router.delete(
+  "/delete/location/:locationId",
+  authenticateToken,
+  deleteLocation
+);
+
 module.exports = router;

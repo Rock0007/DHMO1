@@ -820,6 +820,35 @@ const setLocation = async (req, res) => {
   }
 };
 
+// GET Geo Location
+const getLocation = async (req, res) => {
+  try {
+    const locations = await Location.find();
+    res.status(200).json(locations);
+  } catch (error) {
+    console.error("Error fetching locations:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// DELETE Geo Location
+const deleteLocation = async (req, res) => {
+  try {
+    const { locationId } = req.params;
+
+    const deletedLocation = await Location.findByIdAndDelete(locationId);
+
+    if (!deletedLocation) {
+      return res.status(404).json({ message: "Location not found" });
+    }
+
+    res.status(200).json({ message: "Location deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting location:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   test,
   login,
@@ -841,4 +870,6 @@ module.exports = {
   deleteStaffProfile,
   getAllStaffProfiles,
   setLocation,
+  getLocation,
+  deleteLocation,
 };

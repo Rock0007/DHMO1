@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
+import { ToastAndroid } from "react-native";
 import { getProfile } from "../Api/authAPI";
 
 const UserContext = createContext();
@@ -14,25 +15,18 @@ const UserProvider = ({ children }) => {
     setUser(null);
   };
 
-  const signup = async (formData) => {
-    try {
-      await signup(formData);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const UserProfile = async () => {
     try {
       const profile = await getProfile();
       login(profile);
     } catch (error) {
       console.error("Error fetching user profile:", error);
+      ToastAndroid.show("Failed to fetch user profile", ToastAndroid.SHORT);
     }
   };
 
   return (
-    <UserContext.Provider value={{ user, login, logout, signup, UserProfile }}>
+    <UserContext.Provider value={{ user, login, logout, UserProfile }}>
       {children}
     </UserContext.Provider>
   );
