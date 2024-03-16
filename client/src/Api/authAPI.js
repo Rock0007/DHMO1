@@ -2,7 +2,7 @@ import axios from "axios";
 import { ToastAndroid } from "react-native";
 import { BASE_URL } from "@env";
 
-const baseURL = "http://10.106.22.225:8000";
+const baseURL = "http://10.106.19.161:8000";
 
 const authApi = axios.create({
   baseURL,
@@ -300,8 +300,22 @@ export const deleteLocation = async (locationId) => {
     const response = await authApi.delete(`/delete/location/${locationId}`);
     return response.data;
   } catch (error) {
-    console.error("Error deleting location:", error);
-    ToastAndroid.show("Failed to delete location", ToastAndroid.SHORT);
+    if (error.response && error.response.status === 404) {
+      throw new Error("Location not found");
+    } else {
+      console.error("Error deleting location:", error);
+      throw new Error("Failed to delete location");
+    }
+  }
+};
+
+export const getTargetLocations = async () => {
+  try {
+    const response = await authApi.get("/target/coordinates");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching target locations:", error);
+    ToastAndroid.show("Failed to fetch target locations", ToastAndroid.SHORT);
     throw error;
   }
 };

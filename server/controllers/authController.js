@@ -800,7 +800,9 @@ const setLocation = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    const newLocationId = generateLocationId();
     const newLocation = new Location({
+      locationId: newLocationId,
       phcName,
       subCenterName,
       district,
@@ -820,6 +822,13 @@ const setLocation = async (req, res) => {
   }
 };
 
+const generateLocationId = () => {
+  const min = 2000;
+  const max = 2999;
+  const randomId = Math.floor(Math.random() * (max - min + 1)) + min;
+  return randomId.toString();
+};
+
 // GET Geo Location
 const getLocation = async (req, res) => {
   try {
@@ -831,12 +840,11 @@ const getLocation = async (req, res) => {
   }
 };
 
-// DELETE Geo Location
-const deleteLocation = async (req, res) => {
+// DELETE Geo Location by ID
+const deleteLocationById = async (req, res) => {
   try {
-    const { locationId } = req.params;
-
-    const deletedLocation = await Location.findByIdAndDelete(locationId);
+    const locationId = req.params.id;
+    const deletedLocation = await Location.findOneAndDelete({ locationId });
 
     if (!deletedLocation) {
       return res.status(404).json({ message: "Location not found" });
@@ -845,6 +853,21 @@ const deleteLocation = async (req, res) => {
     res.status(200).json({ message: "Location deleted successfully" });
   } catch (error) {
     console.error("Error deleting location:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//Target GEO Coordinates
+const getLocationCoordinates = async (req, res) => {
+  try {
+    const locations = await Location.find({}, "latitude longitude");
+    const coordinates = locations.map(({ latitude, longitude }) => ({
+      latitude,
+      longitude,
+    }));
+    res.json(coordinates);
+  } catch (error) {
+    console.error("Error fetching location coordinates:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -871,5 +894,6 @@ module.exports = {
   getAllStaffProfiles,
   setLocation,
   getLocation,
-  deleteLocation,
+  deleteLocationById,
+  getLocationCoordinates,
 };

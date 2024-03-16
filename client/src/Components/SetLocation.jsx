@@ -14,6 +14,7 @@ import {
 } from "react-native-heroicons/outline";
 import { setLocation, getLocation } from "../Api/authAPI";
 import LocationCard from "./LocationCard";
+import { deleteLocation } from "../Api/authAPI";
 
 const SetLocation = () => {
   const [phcName, setPhcName] = useState("");
@@ -103,6 +104,17 @@ const SetLocation = () => {
       )
     : [];
 
+  const handleDeleteLocation = async (locationId) => {
+    try {
+      await deleteLocation(locationId);
+      ToastAndroid.show("Location deleted successfully", ToastAndroid.SHORT);
+      fetchLocationDetails(); // Refresh location details after deletion
+    } catch (error) {
+      console.error("Error deleting location:", error);
+      ToastAndroid.show("Failed to delete location", ToastAndroid.SHORT);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.contentContainer}>
@@ -190,10 +202,14 @@ const SetLocation = () => {
         <View style={styles.cardContainer}>
           {filteredLocationDetails.length > 0 ? (
             filteredLocationDetails.map((location, index) => (
-              <LocationCard key={index} locationDetails={location} />
+              <LocationCard
+                key={index}
+                locationDetails={location}
+                onDelete={handleDeleteLocation}
+              />
             ))
           ) : (
-            <Text>No matching location details</Text>
+            <Text>No location Data</Text>
           )}
         </View>
       </View>

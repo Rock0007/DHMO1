@@ -3,6 +3,11 @@ const { Schema } = mongoose;
 const { format } = require("date-fns");
 
 const locationSchema = new Schema({
+  locationId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   phcName: {
     type: String,
     required: true,
