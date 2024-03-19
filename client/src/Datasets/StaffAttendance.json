@@ -1,0 +1,13 @@
+[
+  { "attendanceDate": "18-03-2024", "status": "Present" },
+  { "attendanceDate": "19-03-2024", "status": "Absent" },
+  { "attendanceDate": "20-03-2024", "status": "Present" },
+  { "attendanceDate": "21-03-2024", "status": "Present" },
+  { "attendanceDate": "22-03-2024", "status": "Present" },
+  { "attendanceDate": "26-02-2024", "status": "Absent" },
+  { "attendanceDate": "27-02-2024", "status": "Present" },
+  { "attendanceDate": "28-01-2024", "status": "Present" },
+  { "attendanceDate": "29-01-2024", "status": "Present" },
+  { "attendanceDate": "30-01-2024", "status": "Absent" },
+  { "attendanceDate": "23-01-2024", "status": "Present" }
+]

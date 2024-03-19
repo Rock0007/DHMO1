@@ -15,6 +15,8 @@ import {
   GetAttendance,
 } from "../Api/authAPI";
 
+import SA from "../Charts/StaffAttendance";
+
 const MarkAttendance = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [password, setPassword] = useState("");
@@ -95,75 +97,84 @@ const MarkAttendance = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Mark Attendance</Text>
-      <View style={styles.buttonContainer}>
-        <View style={styles.row}>
-          <CustomButton
-            text="Login"
-            color="rgb(0, 128, 0)"
-            onPress={() => setIsLoginModalVisible(true)}
-          />
-          <CustomButton
-            text="Logout"
-            color="rgb(255, 0, 0)"
-            onPress={() => setIsLogoutModalVisible(true)}
-          />
+    <>
+      <View style={styles.container}>
+        <Text style={styles.heading}>Mark Attendance</Text>
+        <View style={styles.buttonContainer}>
+          <View style={styles.row}>
+            <CustomButton
+              text="Login"
+              color="rgb(0, 128, 0)"
+              onPress={() => setIsLoginModalVisible(true)}
+            />
+            <CustomButton
+              text="Logout"
+              color="rgb(255, 0, 0)"
+              onPress={() => setIsLogoutModalVisible(true)}
+            />
+          </View>
+          <View style={styles.row}>
+            <CustomButton text="Leave Request" color="rgb(255, 165, 0)" />
+            <CustomButton text="Status" color="rgb(0, 0, 255)" />
+          </View>
         </View>
-        <View style={styles.row}>
-          <CustomButton text="Leave Request" color="rgb(255, 165, 0)" />
-          <CustomButton text="Status" color="rgb(0, 0, 255)" />
-        </View>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isLoginModalVisible}
+          onRequestClose={() => setIsLoginModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalHeading}>Enter Password</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={true}
+              />
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleLogin}
+              >
+                <Text style={styles.buttonText}>Login</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+        {/* Logout Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isLogoutModalVisible}
+          onRequestClose={() => setIsLogoutModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalHeading}>Confirm Logout? </Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={true}
+              />
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleLogout}
+              >
+                <Text style={styles.buttonText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isLoginModalVisible}
-        onRequestClose={() => setIsLoginModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalHeading}>Enter Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={true}
-            />
-            <TouchableOpacity style={styles.submitButton} onPress={handleLogin}>
-              <Text style={styles.buttonText}>Login</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-      {/* Logout Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isLogoutModalVisible}
-        onRequestClose={() => setIsLogoutModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalHeading}>Confirm Logout? </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={true}
-            />
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleLogout}
-            >
-              <Text style={styles.buttonText}>Logout</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </View>
+      <View style={styles.chartContainer}>
+        <Text style={styles.heading}>Attendance Summary</Text>
+        <SA />
+      </View>
+    </>
   );
 };
 
@@ -178,7 +189,7 @@ const CustomButton = ({ text, color, onPress }) => (
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1 / 3,
     backgroundColor: "#fff",
     alignItems: "center",
     margin: 20,
@@ -201,11 +212,10 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     justifyContent: "center",
-    width: 120,
+    width: "40%", // Modified width to fit buttons in a row
     height: 40,
-    marginHorizontal: 20,
     borderRadius: 5,
-    width: "40%",
+    backgroundColor: "#007aff", // Changed color to blue
   },
   buttonText: {
     color: "#fff",
@@ -222,8 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    width: "60%",
-    height: "auto",
+    width: "80%", // Modified width to fit content
     alignItems: "center",
   },
   modalHeading: {
@@ -231,14 +240,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
   },
-  modalText: {
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: "center",
-  },
   input: {
     width: "100%",
-    height: "18%",
+    height: 40, // Changed height to fixed height
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
@@ -246,11 +250,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   submitButton: {
-    backgroundColor: "rgb(0, 128, 0)",
+    backgroundColor: "#007aff", // Changed color to blue
     width: "40%",
     alignItems: "center",
     padding: 12,
     borderRadius: 8,
+  },
+  chartContainer: {
+    flex: 1 / 2,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 
