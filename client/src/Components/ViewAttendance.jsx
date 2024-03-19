@@ -23,6 +23,7 @@ const MarkAttendance = () => {
   const [isLoginModalVisible, setIsLoginModalVisible] = useState(false);
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [staffId, setStaffId] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const logProfileData = async () => {
@@ -37,7 +38,7 @@ const MarkAttendance = () => {
     };
 
     logProfileData();
-  }, []);
+  }, [refreshKey]);
 
   const fetchAttendanceData = async () => {
     setIsLoading(true);
@@ -53,7 +54,11 @@ const MarkAttendance = () => {
 
   useEffect(() => {
     fetchAttendanceData();
-  }, [staffId]);
+  }, [staffId, refreshKey]);
+
+  const handleRefresh = () => {
+    setRefreshKey((prevKey) => prevKey + 1);
+  };
 
   const handleLogin = async () => {
     try {
@@ -61,6 +66,7 @@ const MarkAttendance = () => {
       ToastAndroid.show("Login Marked successfully!", ToastAndroid.SHORT);
       setIsLoginModalVisible(false);
       setPassword("");
+      handleRefresh();
     } catch (error) {
       console.error("Error marking login attendance:", error);
       if (error.message) {
@@ -86,6 +92,7 @@ const MarkAttendance = () => {
       if (error.message) {
         ToastAndroid.show(error.message, ToastAndroid.SHORT);
         setIsLogoutModalVisible(false);
+        handleRefresh();
       } else {
         ToastAndroid.show(
           "Failed to fetch profile data. Please try again.",

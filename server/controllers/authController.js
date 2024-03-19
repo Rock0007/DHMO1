@@ -71,7 +71,6 @@ const signup = async (req, res) => {
     const hashedPassword = await hashPassword(password);
     const hashedConfirmPassword = await hashPassword(confirmPassword);
 
-    // Create new staff member
     const staffMember = new SubCenterStaff({
       fullName,
       age,

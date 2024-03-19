@@ -81,7 +81,7 @@ const PatientEntry = ({}) => {
     "Allergies",
     "Arthritis",
     "Body pains",
-    "Motions",
+    "Diarrhea",
     "Hypertension (High Blood Pressure)",
   ];
 
