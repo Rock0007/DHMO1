@@ -2,37 +2,38 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const { format } = require("date-fns");
 
-const attendanceSchema = new Schema(
-  {
-    attendanceDate: {
-      type: String,
-      default: () => format(new Date(), "dd-MM-yyyy"),
-    },
-    time: {
-      type: String,
-      default: () => format(new Date(), "HH:mm:ss"),
-    },
-    status: {
-      type: String,
-      enum: ["Present", "Absent", "On Leave"],
-      default: "Present",
-    },
-    reason: {
-      type: String,
-    },
-    location: {
-      type: {
-        latitude: Number,
-        longitude: Number,
-      },
-    },
-    leaveRequest: {
-      type: Boolean,
-      default: false,
+const attendanceSchema = new Schema({
+  attendanceDate: {
+    type: String,
+    default: () => format(new Date(), "dd-MM-yyyy"),
+  },
+  loginTime: {
+    type: String,
+    default: null,
+  },
+  logoutTime: {
+    type: String,
+    default: null,
+  },
+  status: {
+    type: String,
+    enum: ["Present", "Absent", "On Leave", "NA"],
+    default: "NA",
+  },
+  reason: {
+    type: String,
+  },
+  location: {
+    type: {
+      latitude: Number,
+      longitude: Number,
     },
   },
-  { timestamps: { createdAt: true, updatedAt: true } }
-);
+  leaveRequest: {
+    type: Boolean,
+    default: false,
+  },
+});
 
 const staffSchema = new Schema({
   fullName: {
@@ -81,7 +82,18 @@ const staffSchema = new Schema({
     type: String,
     required: true,
   },
-  attendance: [attendanceSchema],
+  date: {
+    type: String,
+    default: () => format(new Date(), "dd-MM-yyyy"),
+  },
+  time: {
+    type: String,
+    default: () => format(new Date(), "HH:mm"),
+  },
+  attendance: {
+    type: [attendanceSchema],
+    default: [],
+  },
 });
 
 const SubCenterStaff = mongoose.model("SubCenterStaff", staffSchema);

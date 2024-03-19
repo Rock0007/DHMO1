@@ -45,6 +45,10 @@ const patientDetailsSchema = new mongoose.Schema({
     unique: true,
     required: true,
   },
+  aadharID: {
+    type: String,
+    unique: true,
+  },
   diagnosis: {
     type: String,
   },

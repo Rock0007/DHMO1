@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { format } = require("date-fns");
 const SubCenterStaff = require("../models/scStaff");
 const PatientDetails = require("../models/PatientDetails");
 const Location = require("../models/Location");
@@ -116,7 +117,7 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "8h",
     });
 
     res
@@ -257,9 +258,9 @@ const checkExistingRecord = async (req, res) => {
 //PatientEntry
 const PatientEntry = async (req, res) => {
   try {
-    const { firstName, age, gender, phoneNumber } = req.body;
+    const { firstName, age, gender, phoneNumber, aadharID } = req.body;
 
-    if (!firstName || !age || !gender || !phoneNumber) {
+    if (!firstName || !age || !gender || !phoneNumber || !aadharID) {
       return res
         .status(400)
         .json({ message: "Please provide all required fields." });
@@ -273,12 +274,27 @@ const PatientEntry = async (req, res) => {
       });
     }
 
-    const existingPatient = await PatientDetails.findOne({ phoneNumber });
+    // Validate AadharID format: should be exactly 12 digits
+    if (!/^\d{12}$/.test(aadharID)) {
+      return res.status(400).json({
+        message: "Invalid AadharID format. Please provide exactly 12 digits.",
+      });
+    }
 
-    if (existingPatient) {
+    const existingPatientPhone = await PatientDetails.findOne({ phoneNumber });
+
+    if (existingPatientPhone) {
       return res
         .status(400)
         .json({ message: "Patient with this phoneNumber already exists" });
+    }
+
+    const existingPatientAadhar = await PatientDetails.findOne({ aadharID });
+
+    if (existingPatientAadhar) {
+      return res
+        .status(400)
+        .json({ message: "Patient with this AadharID already exists" });
     }
 
     const newPatient = new PatientDetails({
@@ -288,6 +304,7 @@ const PatientEntry = async (req, res) => {
       gender,
       isCovid19Positive: req.body.isCovid19Positive || false,
       phoneNumber,
+      aadharID,
       diagnosis: req.body.diagnosis || "",
       treatment: req.body.treatment || "",
       otherInfo: req.body.otherInfo || "",
@@ -313,7 +330,8 @@ const PatientEntry = async (req, res) => {
 
     if (error.code === 11000) {
       return res.status(400).json({
-        message: "Duplicate phoneNumber. Please provide a unique phoneNumber.",
+        message:
+          "Duplicate phoneNumber or AadharID. Please provide unique values.",
       });
     }
 
@@ -361,7 +379,6 @@ const getPatientDetailsById = async (req, res) => {
   }
 };
 
-//Edit Patient Details
 const editPatientDetailsById = async (req, res) => {
   try {
     const patientId = req.params.id;
@@ -372,6 +389,7 @@ const editPatientDetailsById = async (req, res) => {
       gender,
       isCovid19Positive,
       phoneNumber,
+      aadharID,
       diagnosis,
       treatment,
       otherInfo,
@@ -380,17 +398,25 @@ const editPatientDetailsById = async (req, res) => {
     if (!patientId) {
       return res.status(400).json({ message: "Invalid update request." });
     }
-
-    // Check if the new phone number already exists for a different patient
-    const existingPatient = await PatientDetails.findOne({
+    const existingPhoneNumberPatient = await PatientDetails.findOne({
       phoneNumber,
-      _id: { $ne: patientId }, // Exclude the current patient from the check
+      _id: { $ne: patientId },
     });
 
-    if (existingPatient) {
+    if (existingPhoneNumberPatient) {
       return res.status(400).json({
         message:
           "Phone Number already exists, try updating with a different Number.",
+      });
+    }
+    const existingAadharIDPatient = await PatientDetails.findOne({
+      aadharID,
+      _id: { $ne: patientId },
+    });
+
+    if (existingAadharIDPatient) {
+      return res.status(400).json({
+        message: "Aadhar ID already exists, please provide a unique Aadhar ID.",
       });
     }
 
@@ -403,6 +429,7 @@ const editPatientDetailsById = async (req, res) => {
         gender,
         isCovid19Positive,
         phoneNumber,
+        aadharID,
         diagnosis,
         treatment,
         otherInfo,
@@ -872,6 +899,147 @@ const getLocationCoordinates = async (req, res) => {
   }
 };
 
+// Mark login attendance
+const loginAttendance = async (req, res) => {
+  const staffId = req.params.staffId;
+  const { password } = req.body;
+
+  try {
+    // Convert staffId to ObjectId
+    const ObjectId = require("mongoose").Types.ObjectId;
+    if (!ObjectId.isValid(staffId)) {
+      return res.status(400).json({ message: "Invalid staffId" });
+    }
+
+    // Find staff member by ID
+    const staff = await SubCenterStaff.findById(staffId);
+
+    if (!staff) {
+      return res.status(404).json({ message: "Staff not found" });
+    }
+
+    // Validate password
+    const passwordMatch = await comparePassword(password, staff.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    const todayDate = format(new Date(), "dd-MM-yyyy");
+    const loginAttendanceToday = staff.attendance.find(
+      (entry) => entry.attendanceDate === todayDate
+    );
+
+    if (loginAttendanceToday && loginAttendanceToday.loginTime) {
+      return res
+        .status(400)
+        .json({ message: "Attendance already marked for today" });
+    }
+
+    staff.attendance.push({
+      attendanceDate: todayDate,
+      loginTime: format(new Date(), "HH:mm:ss"),
+      status: "Present",
+    });
+
+    await staff.save();
+
+    res.status(200).json({ message: "Login attendance marked successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Logout Attendance
+const logoutAttendance = async (req, res) => {
+  const staffId = req.params.staffId;
+  const { password } = req.body;
+
+  try {
+    const staff = await SubCenterStaff.findById(staffId);
+
+    if (!staff) {
+      return res.status(404).json({ message: "Staff not found" });
+    }
+    const passwordMatch = await comparePassword(password, staff.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    const todayDate = format(new Date(), "dd-MM-yyyy");
+
+    const loginAttendanceToday = staff.attendance.find(
+      (entry) => entry.attendanceDate === todayDate
+    );
+
+    if (!loginAttendanceToday || !loginAttendanceToday.loginTime) {
+      return res
+        .status(400)
+        .json({ message: "You haven't logged in for today" });
+    }
+
+    if (loginAttendanceToday.logoutTime) {
+      return res.status(400).json({ message: "You have already logged out" });
+    }
+
+    loginAttendanceToday.logoutTime = format(new Date(), "HH:mm:ss");
+
+    await staff.save();
+
+    return res.status(200).json({ message: "You have logged out" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+//Leave Request POST
+const leaveRequest = async (req, res) => {
+  const staffId = req.params.staffId;
+  const { reason } = req.body;
+
+  try {
+    const staff = await SubCenterStaff.findById(staffId);
+
+    if (!staff) {
+      return res.status(404).json({ message: "Staff not found" });
+    }
+
+    const todayDate = format(new Date(), "dd-MM-yyyy");
+
+    staff.attendance.push({
+      attendanceDate: todayDate,
+      status: "On Leave",
+      reason: reason,
+    });
+
+    await staff.save();
+
+    res.status(200).json({ message: "Leave request marked successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+//Get Attendance
+const getAttendance = async (req, res) => {
+  const staffId = req.params.staffId;
+
+  try {
+    const staff = await SubCenterStaff.findById(staffId);
+
+    if (!staff) {
+      return res.status(404).json({ message: "Staff not found" });
+    }
+
+    res.status(200).json({ attendance: staff.attendance });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   test,
   login,
@@ -896,4 +1064,9 @@ module.exports = {
   getLocation,
   deleteLocationById,
   getLocationCoordinates,
+  loginAttendance,
+  logoutAttendance,
+  logoutAttendance,
+  getAttendance,
+  leaveRequest,
 };

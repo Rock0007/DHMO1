@@ -97,9 +97,15 @@ const PatientDetails = ({ route }) => {
             <ActivityIndicator size="large" color="#007bff" />
           ) : (
             <>
-              <View style={styles.detailContainer}>
-                <Text style={styles.label}>Patient ID:</Text>
-                <Text style={styles.greenText}>{patient?._id}</Text>
+              <View style={styles.inlineContainer}>
+                <View style={styles.inlineDetailContainer}>
+                  <Text style={styles.label}>Patient ID:</Text>
+                  <Text style={styles.greenText}>{patient?._id}</Text>
+                </View>
+                <View style={styles.inlineDetailContainer}>
+                  <Text style={styles.label}>Aadhar ID</Text>
+                  <Text style={styles.detail}>{patient.aadharID || "NA"}</Text>
+                </View>
               </View>
 
               <View style={styles.inlineContainer}>
@@ -204,13 +210,13 @@ const PatientDetails = ({ route }) => {
                   </View>
 
                   <Text style={styles.Colorlabel}>Diagnosis</Text>
-                  <Text style={styles.detail}>{revisit.diagnosis}</Text>
+                  <Text style={styles.detail}>{revisit.diagnosis || "NA"}</Text>
 
                   <Text style={styles.Colorlabel}>Treatment</Text>
-                  <Text style={styles.detail}>{revisit.treatment}</Text>
+                  <Text style={styles.detail}>{revisit.treatment || "NA"}</Text>
 
                   <Text style={styles.Colorlabel}>Other Info</Text>
-                  <Text style={styles.detail}>{revisit.otherInfo}</Text>
+                  <Text style={styles.detail}>{revisit.otherInfo || "NA"}</Text>
                   <View style={styles.inlineContainer}>
                     <View style={styles.inlineDetailContainer}>
                       <Text style={styles.label}>Date</Text>

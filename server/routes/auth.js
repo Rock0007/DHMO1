@@ -26,6 +26,10 @@ const {
   getLocation,
   deleteLocationById,
   getLocationCoordinates,
+  loginAttendance,
+  logoutAttendance,
+  leaveRequest,
+  getAttendance,
 } = require("../controllers/authController");
 
 router.use(
@@ -67,5 +71,11 @@ router.post("/set/location", authenticateToken, setLocation);
 router.get("/get/location", authenticateToken, getLocation);
 router.delete("/delete/location/:id", authenticateToken, deleteLocationById);
 router.get("/target/coordinates", authenticateToken, getLocationCoordinates);
+
+//Attendance
+router.post("/staff/:staffId/login", authenticateToken, loginAttendance);
+router.post("/staff/:staffId/logout", authenticateToken, logoutAttendance);
+router.post("/staff/:staffId/leaverequest", authenticateToken, leaveRequest);
+router.get("/staff/attendance/:staffId", authenticateToken, getAttendance);
 
 module.exports = router;

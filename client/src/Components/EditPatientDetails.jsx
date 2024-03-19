@@ -26,6 +26,7 @@ const EditPatientDetails = ({ route }) => {
     diagnosis: patient.diagnosis,
     treatment: patient.treatment,
     otherInfo: patient.otherInfo,
+    aadharID: patient.aadharID,
   });
 
   const handleEditSave = async () => {
@@ -122,6 +123,18 @@ const EditPatientDetails = ({ route }) => {
             }}
             keyboardType="numeric"
             maxLength={10}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Enter Aadhar ID"
+            value={editedPatient.aadharID}
+            onChangeText={(text) => {
+              const sanitizedText = text.replace(/[^0-9]/g, "");
+              const trimmedText = sanitizedText.slice(0, 12);
+              setEditedPatient({ ...editedPatient, aadharID: trimmedText });
+            }}
+            keyboardType="numeric"
+            maxLength={12}
           />
 
           <Text style={styles.sectionHeading}>Diagnosis</Text>

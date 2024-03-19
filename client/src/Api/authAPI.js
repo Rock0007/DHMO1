@@ -2,7 +2,7 @@ import axios from "axios";
 import { ToastAndroid } from "react-native";
 import { BASE_URL } from "@env";
 
-const baseURL = "http://10.106.19.161:8000";
+const baseURL = "http://10.106.30.47:8000";
 
 const authApi = axios.create({
   baseURL,
@@ -317,6 +317,67 @@ export const getTargetLocations = async () => {
     console.error("Error fetching target locations:", error);
     ToastAndroid.show("Failed to fetch target locations", ToastAndroid.SHORT);
     throw error;
+  }
+};
+
+export const markLoginAttendance = async (staffId, password) => {
+  try {
+    if (typeof staffId !== "string" || !staffId.trim()) {
+      throw new Error("Invalid staffId");
+    }
+
+    const response = await authApi.post(`/staff/${staffId}/login`, {
+      password,
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      console.error("Error marking login attendance:", error.response.data);
+      throw new Error(error.response.data.message || "An error occurred");
+    } else if (error.request) {
+      console.error("Error marking login attendance: No response received");
+      throw new Error("No response received from server");
+    } else {
+      console.error("Error marking login attendance:", error.message);
+      throw new Error("Request failed: " + error.message);
+    }
+  }
+};
+
+export const markLogoutAttendance = async (staffId, password) => {
+  try {
+    if (typeof staffId !== "string" || !staffId.trim()) {
+      throw new Error("Invalid staffId");
+    }
+
+    const response = await authApi.post(`/staff/${staffId}/logout`, {
+      password,
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      console.error("Error marking logout attendance:", error.response.data);
+      throw new Error(error.response.data.message || "An error occurred");
+    } else if (error.request) {
+      console.error("Error marking logout attendance: No response received");
+      throw new Error("No response received from server");
+    } else {
+      console.error("Error marking logout attendance:", error.message);
+      throw new Error("Request failed: " + error.message);
+    }
+  }
+};
+
+export const GetAttendance = async (staffId) => {
+  try {
+    const response = await authApi(`/staff/attendance/${staffId}`);
+    return response.data.attendance;
+  } catch (error) {
+    console.error("Error fetching attendance:", error);
+    throw new Error(
+      error.response?.data.message ||
+        "Failed to fetch attendance. Please try again."
+    );
   }
 };
 

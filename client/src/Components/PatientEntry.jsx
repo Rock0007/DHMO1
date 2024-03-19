@@ -22,6 +22,7 @@ const PatientEntry = ({}) => {
   const [treatment, setTreatment] = useState("");
   const [otherInfo, setOtherInfo] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [aadharID, setAadharID] = useState("");
 
   const navigation = useNavigation();
 
@@ -34,6 +35,7 @@ const PatientEntry = ({}) => {
         gender,
         isCovid19Positive,
         phoneNumber,
+        aadharID,
         diagnosis,
         treatment,
         otherInfo,
@@ -55,6 +57,7 @@ const PatientEntry = ({}) => {
       setTreatment("");
       setOtherInfo("");
       setPhoneNumber("");
+      setAadharID("");
 
       navigation.navigate("Patient Logs");
     } catch (error) {
@@ -98,7 +101,7 @@ const PatientEntry = ({}) => {
           <View style={styles.formRow}>
             <TextInput
               style={styles.nameInput}
-              placeholder="First Name"
+              placeholder="First Name *"
               value={firstName}
               onChangeText={(text) => setFirstName(text)}
             />
@@ -112,7 +115,7 @@ const PatientEntry = ({}) => {
           <View style={styles.formRow}>
             <TextInput
               style={styles.nameInput}
-              placeholder="Age"
+              placeholder="Age *"
               value={age}
               onChangeText={(text) => {
                 const sanitizedText = text.replace(/[^0-9]/g, "");
@@ -125,7 +128,7 @@ const PatientEntry = ({}) => {
 
             <TextInput
               style={styles.nameInput}
-              placeholder="Gender"
+              placeholder="Gender *"
               value={gender}
               onChangeText={(text) => setGender(text)}
             />
@@ -141,7 +144,7 @@ const PatientEntry = ({}) => {
           </View>
           <TextInput
             style={styles.input}
-            placeholder="Enter +91 Phone Number"
+            placeholder="Enter +91 Phone Number *"
             value={phoneNumber}
             onChangeText={(text) => {
               const sanitizedText = text.replace(/[^0-9]/g, "");
@@ -151,7 +154,19 @@ const PatientEntry = ({}) => {
             keyboardType="numeric"
             maxLength={10}
           />
-
+          <TextInput
+            style={styles.input}
+            placeholder="Enter Aadhar ID (optional)"
+            value={aadharID}
+            onChangeText={(text) => {
+              const sanitizedText = text.replace(/[^0-9]/g, "");
+              const trimmedText = sanitizedText.slice(0, 12);
+              setAadharID(trimmedText);
+            }}
+            keyboardType="numeric"
+            maxLength={12}
+          />
+          <Text style={styles.sectionHeading}>Diagnosis</Text>
           <View style={styles.diagnosisLabelsContainer}>
             {diagnosisLabels.map((label, index) => (
               <TouchableOpacity
@@ -164,7 +179,6 @@ const PatientEntry = ({}) => {
             ))}
           </View>
 
-          <Text style={styles.sectionHeading}>Diagnosis</Text>
           <TextInput
             style={styles.textArea}
             multiline={true}
@@ -278,7 +292,7 @@ const styles = StyleSheet.create({
   sectionHeading: {
     fontSize: 15,
     fontWeight: "bold",
-    marginBottom: 5,
+    marginBottom: 10,
   },
   textArea: {
     height: 100,
