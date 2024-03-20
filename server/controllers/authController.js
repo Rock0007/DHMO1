@@ -532,6 +532,33 @@ const revisits = async (req, res) => {
   }
 };
 
+//GET ALL REVISISTS DATA
+const getAllRevisits = async (req, res) => {
+  try {
+    const allPatients = await PatientDetails.find();
+
+    if (!allPatients || allPatients.length === 0) {
+      return res.status(404).json({ message: "No patients found" });
+    }
+
+    let allRevisits = [];
+
+    for (const patient of allPatients) {
+      if (patient.revisits && patient.revisits.length > 0) {
+        allRevisits = [...allRevisits, ...patient.revisits];
+      }
+    }
+
+    return res.status(200).json({
+      message: "All revisits data retrieved successfully",
+      revisits: allRevisits,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 //Get Revisits Data
 const getRevisits = async (req, res) => {
   try {
@@ -570,13 +597,6 @@ const editRevisit = async (req, res) => {
     const { phoneNumber, revisitId } = req.params;
     const { diagnosis, treatment, otherInfo } = req.body;
 
-    if (!/^\d{10}$/.test(phoneNumber)) {
-      return res.status(400).json({
-        message:
-          "Invalid phoneNumber format. Please provide exactly 10 digits.",
-      });
-    }
-
     const existingPatient = await PatientDetails.findOne({ phoneNumber });
 
     if (!existingPatient) {
@@ -590,6 +610,20 @@ const editRevisit = async (req, res) => {
     if (!revisitToUpdate) {
       return res.status(404).json({
         message: "Revisit with this ID does not exist.",
+      });
+    }
+
+    const revisitTimestamp = new Date(
+      revisitToUpdate.date + " " + revisitToUpdate.time
+    );
+    const currentTime = new Date();
+    const timeDifference = currentTime.getTime() - revisitTimestamp.getTime();
+    const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
+
+    if (hoursDifference > 48) {
+      return res.status(403).json({
+        message:
+          "You can only edit revisits within 48 hours from the posting time.",
       });
     }
 
@@ -609,17 +643,9 @@ const editRevisit = async (req, res) => {
   }
 };
 
-// Delete Revisit
 const deleteRevisit = async (req, res) => {
   try {
     const { phoneNumber, revisitId } = req.params;
-
-    if (!/^\d{10}$/.test(phoneNumber)) {
-      return res.status(400).json({
-        message:
-          "Invalid phoneNumber format. Please provide exactly 10 digits.",
-      });
-    }
 
     const existingPatient = await PatientDetails.findOne({ phoneNumber });
 
@@ -629,17 +655,29 @@ const deleteRevisit = async (req, res) => {
       });
     }
 
-    const revisitIndex = existingPatient.revisits.findIndex(
-      (revisit) => revisit._id.toString() === revisitId
-    );
+    const revisitToRemove = existingPatient.revisits.id(revisitId);
 
-    if (revisitIndex === -1) {
+    if (!revisitToRemove) {
       return res.status(404).json({
         message: "Revisit with this ID does not exist.",
       });
     }
 
-    existingPatient.revisits.splice(revisitIndex, 1);
+    const timestamp = parseInt(revisitId.substring(0, 8), 16) * 1000;
+    const revisitTimestamp = new Date(timestamp);
+    const currentTime = new Date();
+    const timeDifference = currentTime.getTime() - revisitTimestamp.getTime();
+    const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
+
+    if (hoursDifference > 48) {
+      return res.status(403).json({
+        message:
+          "You can only delete revisits within 48 hours from the posting time.",
+      });
+    }
+
+    existingPatient.revisits.pull(revisitToRemove);
+
     const updatedPatient = await existingPatient.save();
 
     return res.status(200).json({
@@ -648,21 +686,11 @@ const deleteRevisit = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-
-    if (error.name === "ValidationError") {
-      const errorMessages = Object.values(error.errors).map(
-        (err) => err.message
-      );
-      return res
-        .status(400)
-        .json({ message: "Validation error", errors: errorMessages });
-    }
-
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-// Edit Staff Profile
+//Edit Staff Profile
 const editStaffProfile = async (req, res) => {
   try {
     const { phoneNumber } = req.params;
@@ -949,7 +977,7 @@ const loginAttendance = async (req, res) => {
 // Logout Attendance
 const logoutAttendance = async (req, res) => {
   const staffId = req.params.staffId;
-  const { password } = req.body;
+  const { password, workHours } = req.body;
 
   try {
     const staff = await SubCenterStaff.findById(staffId);
@@ -979,7 +1007,7 @@ const logoutAttendance = async (req, res) => {
     }
 
     loginAttendanceToday.logoutTime = format(new Date(), "HH:mm:ss");
-
+    loginAttendanceToday.workHours = JSON.parse(workHours);
     await staff.save();
 
     return res.status(200).json({ message: "You have logged out" });
@@ -1036,6 +1064,73 @@ const getAttendance = async (req, res) => {
   }
 };
 
+//Get Patient Yearly Data
+const getYearlyPatientData = async (req, res) => {
+  try {
+    const allPatients = await PatientDetails.find().sort({ date: -1 });
+
+    if (!allPatients || allPatients.length === 0) {
+      return res.status(404).json({ message: "No patients found" });
+    }
+
+    // Initialize treatment counts for each month of the year
+    const treatmentCounts = Array(12).fill(0);
+
+    // Iterate through all patients
+    allPatients.forEach((patient) => {
+      // Extract year from the patient's date
+      const year = parseInt(patient.date.split("-")[2]);
+      // Check if the patient's date matches the requested year
+      if (year === parseInt(req.params.year)) {
+        // Extract month from the patient's date
+        const monthIndex = parseInt(patient.date.split("-")[1]) - 1;
+        // Increment treatment count for the corresponding month
+        treatmentCounts[monthIndex]++;
+        // Iterate through revisits
+        patient.revisits.forEach((revisit) => {
+          // Extract year and month from the revisit's date
+          const revisitYear = parseInt(revisit.date.split("-")[2]);
+          const revisitMonthIndex = parseInt(revisit.date.split("-")[1]) - 1;
+          // Check if the revisit's date matches the requested year
+          if (revisitYear === parseInt(req.params.year)) {
+            // Increment treatment count for the corresponding month
+            treatmentCounts[revisitMonthIndex]++;
+          }
+        });
+      }
+    });
+
+    // Prepare response data
+    const responseData = {
+      year: req.params.year,
+      treatmentCounts: treatmentCounts,
+    };
+
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Helper function to extract year from date
+const extractYearFromDate = (dateString) => {
+  const [day, month, year] = dateString.split("-");
+  return year;
+};
+
+// Helper function to count MongoDB IDs per year
+const countMongoDBIds = (id, year, yearlyTreatmentCount) => {
+  if (!yearlyTreatmentCount[year]) {
+    yearlyTreatmentCount[year] = {};
+  }
+  if (!yearlyTreatmentCount[year][id]) {
+    yearlyTreatmentCount[year][id] = 1;
+  } else {
+    yearlyTreatmentCount[year][id]++;
+  }
+};
+
 module.exports = {
   test,
   login,
@@ -1051,6 +1146,7 @@ module.exports = {
   deletePatientById,
   revisits,
   getRevisits,
+  getAllRevisits,
   editRevisit,
   deleteRevisit,
   editStaffProfile,
@@ -1065,4 +1161,5 @@ module.exports = {
   logoutAttendance,
   getAttendance,
   leaveRequest,
+  getYearlyPatientData,
 };

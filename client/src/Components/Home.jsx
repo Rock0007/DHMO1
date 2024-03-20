@@ -6,6 +6,8 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
+  ScrollView,
+  RefreshControl,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useUser } from "../Contexts/userContext";
@@ -15,10 +17,17 @@ const Home = () => {
   const navigation = useNavigation();
   const { user, UserProfile } = useUser();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleEditProfile = () => {
     navigation.navigate("Edit Profile");
   };
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await UserProfile();
+    setRefreshing(false);
+  }, [UserProfile]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,7 +49,12 @@ const Home = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.contentContainer}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <TouchableOpacity
         style={styles.editIconContainer}
         onPress={handleEditProfile}
@@ -74,12 +88,12 @@ const Home = () => {
         <Text style={styles.label}>Gmail:</Text>
         <Text style={styles.detail}>{user?.gmail || "N/A"}</Text>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  contentContainer: {
     backgroundColor: "white",
     borderRadius: 10,
     padding: 20,

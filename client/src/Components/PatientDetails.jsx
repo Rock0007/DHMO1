@@ -49,7 +49,11 @@ const PatientDetails = ({ route }) => {
       }
     } catch (error) {
       console.error("Delete Revisit error:", error);
-      ToastAndroid.show("Error deleting revisit", ToastAndroid.SHORT);
+      if (error.message === "You can only delete revisits within 48 hours.") {
+        ToastAndroid.show(error.message, ToastAndroid.SHORT);
+      } else {
+        ToastAndroid.show("Error deleting revisit", ToastAndroid.SHORT);
+      }
     }
   };
 

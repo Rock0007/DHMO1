@@ -30,6 +30,7 @@ import Revisit from "./src/Components/Revisit";
 import StaffLogs from "./src/Components/StaffLogs";
 import EditStaffDetails from "./src/Components/EditStaffDetails";
 import SetLocation from "./src/Components/SetLocation";
+import Dashboard from "./src/Components/Dashboard";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -135,6 +136,19 @@ const HomeDrawer = () => {
           drawerIcon: ({ focused }) => (
             <ArrowLeftStartOnRectangleIcon
               name="home"
+              size={18}
+              color={focused ? "blue" : "black"}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Dashboard"
+        component={Dashboard}
+        options={{
+          drawerIcon: ({ focused }) => (
+            <ArrowLeftStartOnRectangleIcon
+              name="Dashboard"
               size={18}
               color={focused ? "blue" : "black"}
             />

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Alert,
   ToastAndroid,
+  RefreshControl,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import {
@@ -20,10 +21,10 @@ import {
   MagnifyingGlassIcon,
   PencilSquareIcon,
   TrashIcon,
-  ArrowPathIcon,
 } from "react-native-heroicons/outline";
 
 const PatientLogs = () => {
+  const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [patientData, setPatientData] = useState([]);
@@ -104,6 +105,29 @@ const PatientLogs = () => {
     navigation.navigate("Revisit");
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const data = await getAllPatientDetails();
+      const sortedData = data.patients.sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      );
+
+      const patientsWithRevisitData = await Promise.all(
+        sortedData.map(async (patient) => {
+          const revisitData = await getRevisitData(patient?.phoneNumber || "");
+          return { ...patient, revisitData };
+        })
+      );
+
+      setPatientData(patientsWithRevisitData || []);
+    } catch (error) {
+      console.error("Error refreshing patient data:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const renderPatientCard = (patient, index) => (
     <TouchableOpacity
       key={index}
@@ -153,10 +177,6 @@ const PatientLogs = () => {
     </TouchableOpacity>
   );
 
-  const handleUpdate = () => {
-    setUpdateTimestamp(Date.now());
-  };
-
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -177,29 +197,27 @@ const PatientLogs = () => {
   });
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.searchContainer}>
-        <MagnifyingGlassIcon name="pencil-square" size={18} color="gray" />
-        <TextInput
-          style={styles.searchBar}
-          placeholder="Search..."
-          onChangeText={handleSearchChange}
-          value={searchQuery}
+    <ScrollView
+      contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#007bff"]}
+          tintColor="#007bff"
         />
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, styles.updateButton]}
-          onPress={handleUpdate}
-        >
-          <View style={styles.buttonContent}>
-            <ArrowPathIcon name="pencil-square" size={18} color="white" />
-            <Text style={[styles.buttonText, { marginLeft: 8 }]}>
-              Patient Logs
-            </Text>
-          </View>
-        </TouchableOpacity>
-
+      }
+    >
+      <View style={styles.searchAndButtonContainer}>
+        <View style={styles.searchContainer}>
+          <MagnifyingGlassIcon name="pencil-square" size={18} color="gray" />
+          <TextInput
+            style={styles.searchBar}
+            placeholder="Search..."
+            onChangeText={handleSearchChange}
+            value={searchQuery}
+          />
+        </View>
         <TouchableOpacity
           style={[styles.button, styles.revisitButton]}
           onPress={handleRevisitPress}
@@ -259,6 +277,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  searchAndButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -267,10 +291,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 5,
     paddingLeft: 10,
+    flex: 1,
+    marginRight: 5,
+    borderRadius: 50,
   },
   searchBar: {
     flex: 1,
-    height: 40,
+    height: 28,
     paddingLeft: 10,
   },
   space: {
@@ -320,19 +347,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 10,
+    marginLeft: 5.5,
   },
   button: {
     flex: 1,
     alignItems: "center",
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 50,
     marginRight: 5,
   },
-  updateButton: {
-    backgroundColor: "#007bff",
-  },
   revisitButton: {
-    backgroundColor: "orange",
+    backgroundColor: "rgb(251 113 133)",
   },
   buttonText: {
     color: "#fff",

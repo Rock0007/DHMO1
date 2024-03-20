@@ -16,6 +16,7 @@ const {
   editPatientDetailsById,
   deletePatientById,
   revisits,
+  getAllRevisits,
   getRevisits,
   editRevisit,
   deleteRevisit,
@@ -30,6 +31,7 @@ const {
   logoutAttendance,
   leaveRequest,
   getAttendance,
+  getYearlyPatientData,
 } = require("../controllers/authController");
 
 router.use(
@@ -51,6 +53,7 @@ router.get("/patientdetails", authenticateToken, getPatientDetails);
 router.get("/patientdetails/:id", authenticateToken, getPatientDetailsById);
 router.put("/patientdetails/:id", authenticateToken, editPatientDetailsById);
 router.delete("/patientdetails/:id", authenticateToken, deletePatientById);
+router.get("/all/revisits", authenticateToken, getAllRevisits);
 router.post("/revisits", authenticateToken, revisits);
 router.get("/revisits/:phoneNumber", authenticateToken, getRevisits);
 router.put("/revisits/:phoneNumber/:revisitId", authenticateToken, editRevisit);
@@ -77,5 +80,12 @@ router.post("/staff/:staffId/login", authenticateToken, loginAttendance);
 router.post("/staff/:staffId/logout", authenticateToken, logoutAttendance);
 router.post("/staff/:staffId/leaverequest", authenticateToken, leaveRequest);
 router.get("/staff/attendance/:staffId", authenticateToken, getAttendance);
+
+//DATA Charts
+router.get(
+  "/patients/yearly/data/:year",
+  authenticateToken,
+  getYearlyPatientData
+);
 
 module.exports = router;

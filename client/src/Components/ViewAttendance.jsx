@@ -37,7 +37,6 @@ const MarkAttendance = () => {
       try {
         const profileData = await getProfile();
         const { _id } = profileData;
-        console.log("User ID:", _id);
         setStaffId(_id);
       } catch (error) {
         console.error("Error fetching profile data:", error);
@@ -52,7 +51,7 @@ const MarkAttendance = () => {
       setIsLoading(true);
       try {
         const attendanceData = await GetAttendance(staffId);
-        console.log("Attendance Data:", attendanceData);
+
         if (attendanceData.length > 0) {
           const latestAttendanceData =
             attendanceData[attendanceData.length - 1];
@@ -70,12 +69,11 @@ const MarkAttendance = () => {
                 `${todayDate} ${latestAttendanceData.logoutTime}`,
                 "DD-MM-YYYY HH:mm:ss"
               );
-              console.log("Login Time:", loginTime.format());
-              console.log("Logout Time:", logoutTime.format());
+
               const diffInMinutes = logoutTime.diff(loginTime, "minutes");
               const hours = Math.floor(diffInMinutes / 60);
               const minutes = diffInMinutes % 60;
-              console.log("Work Hours: " + hours + "hrs " + minutes + "mins");
+
               setWorkHours({ hours, minutes });
             } else {
               setWorkHours({ hours: 0, minutes: 0 });
@@ -124,11 +122,13 @@ const MarkAttendance = () => {
 
   const handleLogout = async () => {
     try {
-      await markLogoutAttendance(staffId, password);
+      // Stringify the workHours object before passing it to markLogoutAttendance
+      await markLogoutAttendance(staffId, password, JSON.stringify(workHours));
       ToastAndroid.show("Logout Marked Successful!", ToastAndroid.SHORT);
       setIsLogoutModalVisible(false);
+      console.log("Work:", workHours);
     } catch (error) {
-      console.error("Error fetching profile data:", error);
+      console.error("Error marking logout attendance:", error);
       if (error.message) {
         ToastAndroid.show(error.message, ToastAndroid.SHORT);
         setIsLogoutModalVisible(false);
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   heading: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     marginVertical: 25,
     textAlign: "center",

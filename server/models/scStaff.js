@@ -33,6 +33,13 @@ const attendanceSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  workHours: {
+    type: {
+      hours: Number,
+      minutes: Number,
+    },
+    default: { hours: 0, minutes: 0 },
+  },
 });
 
 const staffSchema = new Schema({
@@ -56,7 +63,19 @@ const staffSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["ANM1", "ANM2", "ANM3", "ANM4", "Staff"],
+    enum: [
+      "DHMO",
+      "Deputy DHMO",
+      "Admin",
+      "Medical Officer",
+      "MLHP",
+      "Pharmacist",
+      "L.T",
+      "Nurse",
+      "HS",
+      "ANM",
+      "Staff",
+    ],
   },
   phcName: {
     type: String,

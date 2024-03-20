@@ -237,11 +237,21 @@ const StaffRegistration = ({ navigation }) => {
               selectedValue={role}
               onValueChange={(itemValue) => setRole(itemValue)}
             >
-              <Picker.Item label="Select Role" value="" />
-              <Picker.Item label="ANM1" value="ANM1" />
-              <Picker.Item label="ANM2" value="ANM2" />
-              <Picker.Item label="ANM3" value="ANM3" />
-              <Picker.Item label="ANM4" value="ANM4" />
+              <Picker.Item
+                label="Select Role"
+                value=""
+                style={styles.grayItem}
+              />
+              <Picker.Item label="DHMO" value="DHMO" />
+              <Picker.Item label="Deputy DHMO" value="Deputy DHMO" />
+              <Picker.Item label="Admin" value="Admin" />
+              <Picker.Item label="Medical Officer" value="Medical Officer" />
+              <Picker.Item label="Pharmacist" value="Pharmacist" />
+              <Picker.Item label="MLHP" value="MLHP" />
+              <Picker.Item label="Nurse" value="Nurse" />
+              <Picker.Item label="HS" value="HS" />
+              <Picker.Item label="L.T" value="L.T" />
+              <Picker.Item label="ANM" value="ANM" />
               <Picker.Item label="Staff" value="Staff" />
             </Picker>
           </View>
@@ -396,6 +406,9 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  grayItem: {
+    color: "blue",
   },
 });
 

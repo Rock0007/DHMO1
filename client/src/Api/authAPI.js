@@ -218,7 +218,13 @@ export const editRevisitById = async (phoneNumber, revisitId, data) => {
     }
   } catch (error) {
     console.error("Edit Revisit error:", error);
-    throw error.response?.data || "An error occurred during revisit update.";
+    if (error.response && error.response.status === 403) {
+      throw new Error(
+        "You can only edit revisits within 48 hours from the posting time."
+      );
+    } else {
+      throw error.response?.data || "An error occurred during revisit update.";
+    }
   }
 };
 
@@ -235,7 +241,13 @@ export const deleteRevisitById = async (phoneNumber, revisitId) => {
     }
   } catch (error) {
     console.error("Delete Revisit error:", error);
-    throw error.response?.data || "An error occurred during revisit deletion.";
+    if (error.response && error.response.status === 403) {
+      throw new Error("You can only delete revisits within 48 hours.");
+    } else if (error.response && error.response.data) {
+      throw error.response.data;
+    } else {
+      throw "An error occurred during revisit deletion.";
+    }
   }
 };
 
@@ -344,7 +356,7 @@ export const markLoginAttendance = async (staffId, password) => {
   }
 };
 
-export const markLogoutAttendance = async (staffId, password) => {
+export const markLogoutAttendance = async (staffId, password, workHours) => {
   try {
     if (typeof staffId !== "string" || !staffId.trim()) {
       throw new Error("Invalid staffId");
@@ -352,6 +364,7 @@ export const markLogoutAttendance = async (staffId, password) => {
 
     const response = await authApi.post(`/staff/${staffId}/logout`, {
       password,
+      workHours,
     });
     return response.data;
   } catch (error) {
@@ -378,6 +391,27 @@ export const GetAttendance = async (staffId) => {
       error.response?.data.message ||
         "Failed to fetch attendance. Please try again."
     );
+  }
+};
+
+export const GetYearlyPatientData = async (year) => {
+  try {
+    const response = await authApi.get(`/patients/yearly/data/${year}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching yearly patient data:", error);
+    if (error.response) {
+      const errorMessage =
+        error.response.data.message || "Failed to fetch patient data";
+      ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
+      throw new Error(errorMessage);
+    } else if (error.request) {
+      ToastAndroid.show("No response from server", ToastAndroid.SHORT);
+      throw new Error("No response from server");
+    } else {
+      ToastAndroid.show("Request failed", ToastAndroid.SHORT);
+      throw new Error("Request failed");
+    }
   }
 };
 
