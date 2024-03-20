@@ -90,15 +90,6 @@ const HomeDrawer = () => {
         }}
       />
       <Drawer.Screen
-        name="View Attendance"
-        component={ViewAttendance}
-        options={{
-          drawerIcon: ({ focused }) => (
-            <EyeIcon name="home" size={18} color={focused ? "blue" : "black"} />
-          ),
-        }}
-      />
-      <Drawer.Screen
         name="Add Staff"
         component={AddStaff}
         options={{
@@ -170,11 +161,16 @@ const App = () => {
               headerShown: true,
               title: "Edit Profile",
               headerStyle: {
-                backgroundColor: "#008bff",
+                backgroundColor: "white",
               },
-              headerTintColor: "white",
+              headerTintColor: "black",
               headerTitleStyle: {
                 fontWeight: "bold",
+                color: "black",
+              },
+              headerBackTitleVisible: false,
+              headerBackTitleStyle: {
+                color: "black",
               },
             }}
           />
@@ -185,11 +181,16 @@ const App = () => {
               headerShown: true,
               title: "Patient Details",
               headerStyle: {
-                backgroundColor: "#008bff",
+                backgroundColor: "white",
               },
-              headerTintColor: "white",
+              headerTintColor: "black",
               headerTitleStyle: {
                 fontWeight: "bold",
+                color: "black",
+              },
+              headerBackTitleVisible: false,
+              headerBackTitleStyle: {
+                color: "black",
               },
             }}
           />
@@ -200,11 +201,16 @@ const App = () => {
               headerShown: true,
               title: "Edit Patient Details",
               headerStyle: {
-                backgroundColor: "#008bff",
+                backgroundColor: "white",
               },
-              headerTintColor: "white",
+              headerTintColor: "black",
               headerTitleStyle: {
                 fontWeight: "bold",
+                color: "black",
+              },
+              headerBackTitleVisible: false,
+              headerBackTitleStyle: {
+                color: "black",
               },
             }}
           />
@@ -215,11 +221,16 @@ const App = () => {
               headerShown: true,
               title: "Revisit Entry",
               headerStyle: {
-                backgroundColor: "orange",
+                backgroundColor: "white",
               },
-              headerTintColor: "white",
+              headerTintColor: "black",
               headerTitleStyle: {
                 fontWeight: "bold",
+                color: "black",
+              },
+              headerBackTitleVisible: false,
+              headerBackTitleStyle: {
+                color: "black",
               },
             }}
           />
@@ -228,13 +239,38 @@ const App = () => {
             component={EditStaffDetails}
             options={{
               headerShown: true,
-              title: "Edit Staff",
+              title: "Edit Staff Details",
               headerStyle: {
-                backgroundColor: "orange",
+                backgroundColor: "white",
               },
-              headerTintColor: "white",
+              headerTintColor: "black",
               headerTitleStyle: {
                 fontWeight: "bold",
+                color: "black",
+              },
+              headerBackTitleVisible: false,
+              headerBackTitleStyle: {
+                color: "black",
+              },
+            }}
+          />
+          <Stack.Screen
+            name="Attendance"
+            component={ViewAttendance}
+            options={{
+              headerShown: true,
+              title: "Attendance",
+              headerStyle: {
+                backgroundColor: "white",
+              },
+              headerTintColor: "black",
+              headerTitleStyle: {
+                fontWeight: "bold",
+                color: "black",
+              },
+              headerBackTitleVisible: false,
+              headerBackTitleStyle: {
+                color: "black",
               },
             }}
           />

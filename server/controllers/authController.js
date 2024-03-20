@@ -904,20 +904,17 @@ const loginAttendance = async (req, res) => {
   const { password } = req.body;
 
   try {
-    // Convert staffId to ObjectId
     const ObjectId = require("mongoose").Types.ObjectId;
     if (!ObjectId.isValid(staffId)) {
       return res.status(400).json({ message: "Invalid staffId" });
     }
 
-    // Find staff member by ID
     const staff = await SubCenterStaff.findById(staffId);
 
     if (!staff) {
       return res.status(404).json({ message: "Staff not found" });
     }
 
-    // Validate password
     const passwordMatch = await comparePassword(password, staff.password);
     if (!passwordMatch) {
       return res.status(401).json({ message: "Invalid password" });

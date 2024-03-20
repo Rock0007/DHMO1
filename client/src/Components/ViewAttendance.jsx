@@ -7,7 +7,10 @@ import {
   Modal,
   StyleSheet,
   ToastAndroid,
+  ScrollView,
+  RefreshControl,
 } from "react-native";
+import moment from "moment";
 import {
   markLoginAttendance,
   markLogoutAttendance,
@@ -19,11 +22,15 @@ import SA from "../Charts/StaffAttendance";
 
 const MarkAttendance = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [password, setPassword] = useState("");
   const [isLoginModalVisible, setIsLoginModalVisible] = useState(false);
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   const [staffId, setStaffId] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [attendanceStatus, setAttendanceStatus] = useState("NA");
+  const [workHours, setWorkHours] = useState(0);
+  const [latestAttendance, setLatestAttendance] = useState({});
 
   useEffect(() => {
     const logProfileData = async () => {
@@ -40,24 +47,57 @@ const MarkAttendance = () => {
     logProfileData();
   }, [refreshKey]);
 
-  const fetchAttendanceData = async () => {
-    setIsLoading(true);
-    try {
-      const attendanceData = await GetAttendance(staffId);
-      console.log("Attendance Data:", attendanceData);
-    } catch (error) {
-      console.error("Error fetching attendance data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchAttendanceData();
-  }, [staffId, refreshKey]);
+    const fetchAttendanceData = async () => {
+      setIsLoading(true);
+      try {
+        const attendanceData = await GetAttendance(staffId);
+        console.log("Attendance Data:", attendanceData);
+        if (attendanceData.length > 0) {
+          const latestAttendanceData =
+            attendanceData[attendanceData.length - 1];
+          const todayDate = moment().format("DD-MM-YYYY");
+          if (latestAttendanceData.attendanceDate === todayDate) {
+            setAttendanceStatus("Present");
+            setLatestAttendance(latestAttendanceData);
 
-  const handleRefresh = () => {
-    setRefreshKey((prevKey) => prevKey + 1);
+            if (latestAttendanceData.logoutTime) {
+              const loginTime = moment(
+                `${todayDate} ${latestAttendanceData.loginTime}`,
+                "DD-MM-YYYY HH:mm:ss"
+              );
+              const logoutTime = moment(
+                `${todayDate} ${latestAttendanceData.logoutTime}`,
+                "DD-MM-YYYY HH:mm:ss"
+              );
+              console.log("Login Time:", loginTime.format());
+              console.log("Logout Time:", logoutTime.format());
+              const diffInMinutes = logoutTime.diff(loginTime, "minutes");
+              const hours = Math.floor(diffInMinutes / 60);
+              const minutes = diffInMinutes % 60;
+              console.log("Work Hours: " + hours + "hrs " + minutes + "mins");
+              setWorkHours({ hours, minutes });
+            } else {
+              setWorkHours({ hours: 0, minutes: 0 });
+            }
+          } else {
+            setAttendanceStatus("NA");
+            setLatestAttendance({});
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching attendance data:", error);
+      } finally {
+        setIsLoading(false);
+        setRefreshing(false);
+      }
+    };
+
+    fetchAttendanceData();
+  }, [staffId, refreshing]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
   };
 
   const handleLogin = async () => {
@@ -66,7 +106,7 @@ const MarkAttendance = () => {
       ToastAndroid.show("Login Marked successfully!", ToastAndroid.SHORT);
       setIsLoginModalVisible(false);
       setPassword("");
-      handleRefresh();
+      onRefresh();
     } catch (error) {
       console.error("Error marking login attendance:", error);
       if (error.message) {
@@ -92,7 +132,7 @@ const MarkAttendance = () => {
       if (error.message) {
         ToastAndroid.show(error.message, ToastAndroid.SHORT);
         setIsLogoutModalVisible(false);
-        handleRefresh();
+        onRefresh();
       } else {
         ToastAndroid.show(
           "Failed to fetch profile data. Please try again.",
@@ -105,7 +145,13 @@ const MarkAttendance = () => {
 
   return (
     <>
-      <View style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollViewContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <Text style={styles.heading}>Mark Attendance</Text>
         <View style={styles.buttonContainer}>
           <View style={styles.row}>
@@ -122,8 +168,19 @@ const MarkAttendance = () => {
           </View>
           <View style={styles.row}>
             <CustomButton text="Leave Request" color="rgb(255, 165, 0)" />
-            <CustomButton text="Status" color="rgb(0, 0, 255)" />
+            <StatusButton
+              text={`Status: ${attendanceStatus}`}
+              color={
+                attendanceStatus === "Present" ? "lightgreen" : "lightcoral"
+              }
+            />
           </View>
+          <Text style={styles.workHoursText}>
+            {attendanceStatus === "Present" &&
+              latestAttendance &&
+              latestAttendance.logoutTime &&
+              `Today's work duration: ${workHours.hours}hrs ${workHours.minutes}mins`}
+          </Text>
         </View>
         <Modal
           animationType="slide"
@@ -176,15 +233,19 @@ const MarkAttendance = () => {
             </View>
           </View>
         </Modal>
-      </View>
-      <View style={styles.chartContainer}>
+      </ScrollView>
+      <View
+        style={styles.chartContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <Text style={styles.heading}>Attendance Summary</Text>
         <SA />
       </View>
     </>
   );
 };
-
 const CustomButton = ({ text, color, onPress }) => (
   <TouchableOpacity
     style={[styles.button, { backgroundColor: color }]}
@@ -194,18 +255,29 @@ const CustomButton = ({ text, color, onPress }) => (
   </TouchableOpacity>
 );
 
+//Status Button
+const StatusButton = ({ text, color, onPress }) => (
+  <TouchableOpacity
+    style={[styles.button, { backgroundColor: color }]}
+    onPress={onPress}
+  >
+    <Text style={[styles.buttonText, { color: "black" }]}>{text}</Text>
+  </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1 / 3,
+    flex: 1 / 2,
     backgroundColor: "#fff",
-    alignItems: "center",
     margin: 20,
     borderRadius: 10,
+    paddingBottom: 10,
   },
   heading: {
     fontSize: 24,
     fontWeight: "bold",
     marginVertical: 25,
+    textAlign: "center",
   },
   buttonContainer: {
     flexDirection: "column",
@@ -219,10 +291,10 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     justifyContent: "center",
-    width: "40%", // Modified width to fit buttons in a row
+    width: "40%",
     height: 40,
     borderRadius: 5,
-    backgroundColor: "#007aff", // Changed color to blue
+    backgroundColor: "#007aff",
   },
   buttonText: {
     color: "#fff",
@@ -239,17 +311,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    width: "80%", // Modified width to fit content
+    width: "80%",
     alignItems: "center",
   },
   modalHeading: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 20,
+    textAlign: "center",
   },
   input: {
     width: "100%",
-    height: 40, // Changed height to fixed height
+    height: 40,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
@@ -257,16 +330,26 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   submitButton: {
-    backgroundColor: "#007aff", // Changed color to blue
+    backgroundColor: "#007aff",
     width: "40%",
     alignItems: "center",
     padding: 12,
     borderRadius: 8,
   },
   chartContainer: {
-    flex: 1 / 2,
-    justifyContent: "center",
+    marginBottom: 80,
     alignItems: "center",
+    backgroundColor: "#fff",
+    marginHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  workHoursText: {
+    textAlign: "center",
+    marginTop: 15,
+    color: "rgb(37 99 235)",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

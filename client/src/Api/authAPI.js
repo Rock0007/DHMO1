@@ -2,7 +2,7 @@ import axios from "axios";
 import { ToastAndroid } from "react-native";
 import { BASE_URL } from "@env";
 
-const baseURL = "http://10.106.30.47:8000";
+const baseURL = "http://10.106.28.157:8000";
 
 const authApi = axios.create({
   baseURL,

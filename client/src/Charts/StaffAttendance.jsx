@@ -4,7 +4,8 @@ import {
   StyleSheet,
   Text,
   ActivityIndicator,
-  TouchableOpacity,
+  ScrollView,
+  RefreshControl,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import moment from "moment";
@@ -15,7 +16,7 @@ const AttendanceCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(moment().format("YYYY-MM"));
   const [userId, setUserId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -30,7 +31,7 @@ const AttendanceCalendar = () => {
     };
 
     fetchProfileData();
-  }, [refreshKey]);
+  }, []);
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -51,13 +52,14 @@ const AttendanceCalendar = () => {
         console.error("Error fetching attendance data:", error);
       } finally {
         setIsLoading(false);
+        setRefreshing(false);
       }
     };
 
     if (userId) {
       fetchAttendance();
     }
-  }, [userId, refreshKey]);
+  }, [userId, refreshing]);
 
   const renderDay = (date, item) => {
     const status = item?.status;
@@ -78,15 +80,17 @@ const AttendanceCalendar = () => {
     setCurrentMonth(month.dateString);
   };
 
-  const handleRefresh = () => {
-    setRefreshKey((prevKey) => prevKey + 1);
+  const onRefresh = () => {
+    setRefreshing(true);
   };
 
   return (
-    <View style={styles.calendarContainer}>
-      <TouchableOpacity onPress={handleRefresh}>
-        <Text>Refresh Calendar</Text>
-      </TouchableOpacity>
+    <ScrollView
+      style={styles.calendarContainer}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       {isLoading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
@@ -97,7 +101,7 @@ const AttendanceCalendar = () => {
           hideExtraDays={true}
         />
       )}
-    </View>
+    </ScrollView>
   );
 };
 

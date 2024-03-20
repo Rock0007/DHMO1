@@ -1,47 +1,36 @@
 import React, { useState, useEffect } from "react";
-import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  TouchableOpacity,
+} from "react-native";
 import * as Location from "expo-location";
 import * as geolib from "geolib";
 import { getTargetLocations } from "../Api/authAPI";
 
-const TargetLocationValidator = () => {
+const TargetLocationValidator = ({ navigation }) => {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [targetCoordinates, setTargetCoordinates] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isWithinTargetLocation, setIsWithinTargetLocation] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          throw new Error("Permission to access location was denied");
-        }
-
-        const fetchedData = await getTargetLocations();
-        const coordinates = fetchedData.map(({ latitude, longitude }) => ({
-          latitude: parseFloat(latitude),
-          longitude: parseFloat(longitude),
-        }));
-        setTargetCoordinates(coordinates);
-
-        const currentLocation = await Location.getCurrentPositionAsync({});
-        setLocation(currentLocation.coords);
-      } catch (error) {
-        console.error("Error:", error);
-        setErrorMsg(error.message || "Failed to fetch data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
-  const handleRefresh = async () => {
+  const fetchData = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        throw new Error("Permission to access location was denied");
+      }
+
       const fetchedData = await getTargetLocations();
       const coordinates = fetchedData.map(({ latitude, longitude }) => ({
         latitude: parseFloat(latitude),
@@ -56,28 +45,19 @@ const TargetLocationValidator = () => {
       setErrorMsg(error.message || "Failed to fetch data");
     } finally {
       setIsLoading(false);
+      setRefreshing(false);
     }
   };
 
-  const handleCurrentRefresh = async () => {
-    try {
-      const currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation.coords);
-    } catch (error) {
-      console.error("Error fetching location:", error);
-      setErrorMsg("Failed to fetch location");
-    }
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchData();
   };
 
-  const radius = 1000;
-  let validationMessage;
-  if (isLoading) {
-    validationMessage = "Fetching your location...";
-  } else if (errorMsg) {
-    validationMessage = errorMsg;
-  } else if (!location) {
-    validationMessage = "Fetching location...";
-  } else {
+  useEffect(() => {
+    if (!location || isLoading || errorMsg) return;
+
+    const radius = 1000;
     const isWithinAnyRadius = targetCoordinates.some((target) =>
       geolib.isPointWithinRadius(
         { latitude: location.latitude, longitude: location.longitude },
@@ -86,7 +66,23 @@ const TargetLocationValidator = () => {
       )
     );
 
-    validationMessage = isWithinAnyRadius
+    setIsWithinTargetLocation(isWithinAnyRadius);
+  }, [location, isLoading, errorMsg, targetCoordinates]);
+
+  const handleMarkAttendance = () => {
+    // Navigate to "View Attendance" screen
+    navigation.navigate("Attendance");
+  };
+
+  let validationMessage;
+  if (isLoading) {
+    validationMessage = "Fetching your location...";
+  } else if (errorMsg) {
+    validationMessage = errorMsg;
+  } else if (!location) {
+    validationMessage = "Fetching location...";
+  } else {
+    validationMessage = isWithinTargetLocation
       ? "You are within one of the target locations!"
       : "You are not within any of the target locations.";
   }
@@ -96,7 +92,13 @@ const TargetLocationValidator = () => {
     : { ...styles.validationMessage, color: "red" };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 10 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <View style={styles.currentLocationContainer}>
         <Text style={styles.currentLocationHeading}>Current Location</Text>
         {location && (
@@ -109,43 +111,34 @@ const TargetLocationValidator = () => {
               Longitude:{" "}
               <Text style={styles.value}>{location.longitude.toFixed(6)}</Text>
             </Text>
-            <TouchableOpacity onPress={handleCurrentRefresh}>
-              <Text style={styles.Currentrefresh}>Refresh</Text>
-            </TouchableOpacity>
           </View>
         )}
       </View>
-      <View style={styles.validationMessageContainer}>
-        <Text style={validationMessageStyles}>{validationMessage}</Text>
-        <TouchableOpacity onPress={handleRefresh}>
-          <Text style={styles.TargetRefresh}>Refresh</Text>
+      <Text style={validationMessageStyles}>{validationMessage}</Text>
+      {!isLoading && isWithinTargetLocation && (
+        <TouchableOpacity
+          onPress={handleMarkAttendance}
+          style={styles.buttonContainer}
+        >
+          <Text style={styles.markAttendanceButton}>Mark Attendance</Text>
         </TouchableOpacity>
-      </View>
-    </View>
+      )}
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "#fff",
+    padding: 20,
+    margin: 20,
+    borderRadius: 10,
   },
   currentLocationContainer: {
-    position: "absolute",
-    top: 20,
-    left: 20,
-    backgroundColor: "#ffffff",
+    backgroundColor: "lightgreen",
     padding: 15,
-    borderRadius: 5,
-    width: "auto",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowRadius: 20,
-    elevation: 6,
+    borderRadius: 10,
+    width: "40%",
   },
   currentLocationHeading: {
     fontSize: 16,
@@ -160,36 +153,25 @@ const styles = StyleSheet.create({
   value: {
     fontWeight: "normal",
   },
-  validationMessageContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   validationMessage: {
     textAlign: "center",
     marginBottom: 10,
     fontSize: 18,
     fontWeight: "bold",
+    marginTop: 100,
   },
-  Currentrefresh: {
-    backgroundColor: "rgb(212 212 212)",
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "black",
-    padding: 6,
-    borderRadius: 4,
+  buttonContainer: {
+    alignItems: "center",
+  },
+  markAttendanceButton: {
     textAlign: "center",
-    marginTop: 10,
-  },
-  TargetRefresh: {
-    backgroundColor: "rgb(212 212 212)",
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "blue",
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 4,
-    textAlign: "center",
+    backgroundColor: "blue",
+    color: "white",
+    borderRadius: 5,
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 
