@@ -45,7 +45,6 @@ const PatientEntry = ({}) => {
     try {
       setLoading(true);
       const profileData = await getProfile();
-      console.log(profileData);
       const { phcName, subcenterName, fullName, _id } = profileData;
       await submitPatientEntry({
         firstName,
@@ -66,7 +65,6 @@ const PatientEntry = ({}) => {
         },
       });
       setLoading(false);
-
       ToastAndroid.showWithGravity(
         "Patient entry submitted successfully.",
         ToastAndroid.SHORT,

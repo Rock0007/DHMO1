@@ -256,6 +256,7 @@ const checkExistingRecord = async (req, res) => {
 };
 
 // PatientEntry
+// PatientEntry
 const PatientEntry = async (req, res) => {
   try {
     const {
@@ -277,7 +278,6 @@ const PatientEntry = async (req, res) => {
       !age ||
       !gender ||
       !phoneNumber ||
-      !aadharID ||
       !treatedBy ||
       !treatedBy.staffName ||
       !treatedBy.staffID ||
@@ -296,7 +296,8 @@ const PatientEntry = async (req, res) => {
       });
     }
 
-    if (!/^\d{12}$/.test(aadharID)) {
+    // Check if aadharID is provided and validate if it's in the correct format
+    if (aadharID && !/^\d{12}$/.test(aadharID)) {
       return res.status(400).json({
         message: "Invalid AadharID format. Please provide exactly 12 digits.",
       });
@@ -309,11 +310,13 @@ const PatientEntry = async (req, res) => {
         .json({ message: "Patient with this phoneNumber already exists" });
     }
 
-    const existingPatientAadhar = await PatientDetails.findOne({ aadharID });
-    if (existingPatientAadhar) {
-      return res
-        .status(400)
-        .json({ message: "Patient with this AadharID already exists" });
+    if (aadharID) {
+      const existingPatientAadhar = await PatientDetails.findOne({ aadharID });
+      if (existingPatientAadhar) {
+        return res
+          .status(400)
+          .json({ message: "Patient with this AadharID already exists" });
+      }
     }
 
     const newPatient = new PatientDetails({
