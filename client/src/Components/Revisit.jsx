@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   ToastAndroid,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { submitRevisit } from "../Api/authAPI";
+import { submitRevisit, getProfile } from "../Api/authAPI";
 
 const Revisit = ({ patientPhoneNumber }) => {
   const navigation = useNavigation();
@@ -17,28 +17,39 @@ const Revisit = ({ patientPhoneNumber }) => {
   const [treatment, setTreatment] = useState("");
   const [otherInfo, setOtherInfo] = useState("");
   const [phoneNumber, setPhoneNumber] = useState(patientPhoneNumber);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const diagnosisLabels = [
-    "Fever",
-    "Cough",
-    "Headache",
-    "Nausea",
-    "Fatigue",
-    "Hypertension (High Blood Pressure)",
-    "Diabetes",
-    "Asthma",
-    "Allergies",
-    "Arthritis",
-    "Body pains",
-  ];
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        await getProfile();
+        setLoading(false);
+      } catch (error) {
+        setError(error);
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleRevisitSubmit = async () => {
     try {
+      setLoading(true);
+      const profileData = await getProfile();
+      const { phcName, subcenterName, fullName, _id } = profileData;
       const revisitData = {
         phoneNumber,
         diagnosis,
         treatment,
         otherInfo,
+        treatedBy: {
+          staffName: fullName,
+          staffID: _id,
+          phcName,
+          subCenter: subcenterName,
+        },
       };
 
       await submitRevisit(revisitData);
@@ -58,6 +69,8 @@ const Revisit = ({ patientPhoneNumber }) => {
       );
 
       console.error("Error submitting revisit:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,6 +81,20 @@ const Revisit = ({ patientPhoneNumber }) => {
       );
     }
   };
+
+  const diagnosisLabels = [
+    "Fever",
+    "Cough",
+    "Headache",
+    "Nausea",
+    "Fatigue",
+    "Hypertension (High Blood Pressure)",
+    "Diabetes",
+    "Asthma",
+    "Allergies",
+    "Arthritis",
+    "Body pains",
+  ];
 
   return (
     <ScrollView style={styles.container}>

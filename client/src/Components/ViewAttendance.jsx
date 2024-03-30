@@ -17,6 +17,7 @@ import {
   getProfile,
   GetAttendance,
 } from "../Api/authAPI";
+import * as Location from "expo-location";
 
 import SA from "../Charts/StaffAttendance";
 
@@ -31,6 +32,22 @@ const MarkAttendance = () => {
   const [attendanceStatus, setAttendanceStatus] = useState("NA");
   const [workHours, setWorkHours] = useState(0);
   const [latestAttendance, setLatestAttendance] = useState({});
+  const [location, setLocation] = useState(null);
+
+  useEffect(() => {
+    const getLocation = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.error("Permission to access location was denied");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location.coords);
+    };
+
+    getLocation();
+  }, []);
 
   useEffect(() => {
     const logProfileData = async () => {
@@ -100,11 +117,22 @@ const MarkAttendance = () => {
 
   const handleLogin = async () => {
     try {
-      await markLoginAttendance(staffId, password);
+      if (!location) {
+        console.error("Location not available");
+        return;
+      }
+
+      await markLoginAttendance(
+        staffId,
+        password,
+        location.latitude,
+        location.longitude
+      );
       ToastAndroid.show("Login Marked successfully!", ToastAndroid.SHORT);
       setIsLoginModalVisible(false);
       setPassword("");
       onRefresh();
+      console.log("Login Marked successfully", markLoginAttendance);
     } catch (error) {
       console.error("Error marking login attendance:", error);
       if (error.message) {
@@ -122,11 +150,19 @@ const MarkAttendance = () => {
 
   const handleLogout = async () => {
     try {
-      // Stringify the workHours object before passing it to markLogoutAttendance
-      await markLogoutAttendance(staffId, password, JSON.stringify(workHours));
+      const logoutTime = moment();
+      const loginTime = moment(
+        `${latestAttendance.attendanceDate} ${latestAttendance.loginTime}`,
+        "DD-MM-YYYY HH:mm:ss"
+      );
+      const diffInMinutes = logoutTime.diff(loginTime, "minutes");
+      const hours = Math.floor(diffInMinutes / 60);
+      const minutes = diffInMinutes % 60;
+
+      await markLogoutAttendance(staffId, password, { hours, minutes });
       ToastAndroid.show("Logout Marked Successful!", ToastAndroid.SHORT);
       setIsLogoutModalVisible(false);
-      console.log("Work:", workHours);
+      console.log("Work:", { hours, minutes });
     } catch (error) {
       console.error("Error marking logout attendance:", error);
       if (error.message) {

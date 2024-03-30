@@ -10,6 +10,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { getAllPatientDetails } from "../Api/authAPI";
 import { useUser } from "../Contexts/userContext";
 import { PencilSquareIcon } from "react-native-heroicons/outline";
 
@@ -66,27 +67,65 @@ const Home = () => {
         style={styles.profilePhoto}
       />
 
-      <View style={styles.detailsContainer}>
-        <Text style={styles.label}>Name:</Text>
-        <Text style={styles.detail}>{user?.fullName || "N/A"}</Text>
+      {/* User Details */}
+      <View style={styles.cardContainer}>
+        <View style={styles.card}>
+          <View style={styles.cardRow}>
+            <Text style={styles.label}>Name</Text>
+            <Text style={styles.detail}>{user?.fullName || "N/A"}</Text>
+          </View>
 
-        <Text style={styles.label}>Phone Number:</Text>
-        <Text style={styles.detail}>{user?.phoneNumber || "N/A"}</Text>
+          <View style={styles.cardRow}>
+            <Text style={styles.label}>Phone Number</Text>
+            <Text style={styles.detail}>{user?.phoneNumber || "N/A"}</Text>
+          </View>
+        </View>
 
-        <Text style={styles.label}>Aadhar ID:</Text>
-        <Text style={styles.detail}>{user?.aadharID || "N/A"}</Text>
+        <View style={styles.card}>
+          <View style={styles.cardRow}>
+            <Text style={styles.label}>Aadhar ID</Text>
+            <Text style={styles.detail}>{user?.aadharID || "N/A"}</Text>
+          </View>
 
-        <Text style={styles.label}>Role:</Text>
-        <Text style={styles.detail}>{user?.role || "N/A"}</Text>
+          <View style={styles.cardRow}>
+            <Text style={styles.label}>Role</Text>
+            <Text style={styles.detail}>{user?.role || "N/A"}</Text>
+          </View>
+        </View>
 
-        <Text style={styles.label}>PHC Name:</Text>
-        <Text style={styles.detail}>{user?.phcName || "N/A"}</Text>
+        <View style={styles.card}>
+          <View style={styles.cardRow}>
+            <Text style={styles.label}>PHC</Text>
+            <Text style={styles.detail}>{user?.phcName || "N/A"}</Text>
+          </View>
 
-        <Text style={styles.label}>Subcenter:</Text>
-        <Text style={styles.detail}>{user?.subcenterName || "N/A"}</Text>
+          <View style={styles.cardRow}>
+            <Text style={styles.label}>SC</Text>
+            <Text style={styles.detail}>{user?.subcenterName || "N/A"}</Text>
+          </View>
+        </View>
 
-        <Text style={styles.label}>Gmail:</Text>
-        <Text style={styles.detail}>{user?.gmail || "N/A"}</Text>
+        <View style={styles.card}>
+          <View style={styles.cardRow}>
+            <Text style={styles.label}>Gmail</Text>
+            <Text style={styles.detail}>{user?.gmail || "N/A"}</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Today Entries and Monthly Present Cards */}
+      <View style={styles.rowContainer}>
+        <View style={styles.cardContainer1}>
+          <Text style={styles.cardLabel}>Today Entries</Text>
+          <Text style={styles.cardValue}>20</Text>
+        </View>
+
+        <View style={styles.cardContainer1}>
+          <Text style={[styles.cardLabel, { color: "orange" }]}>
+            Monthly Present
+          </Text>
+          <Text style={styles.cardValue}>10</Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -94,7 +133,7 @@ const Home = () => {
 
 const styles = StyleSheet.create({
   contentContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#ffffff",
     borderRadius: 10,
     padding: 20,
     margin: 20,
@@ -110,24 +149,64 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
+    marginBottom: 30,
+  },
+  cardContainer: {
+    width: "97%",
+    borderRadius: 10,
+    padding: 20,
+    backgroundColor: "#f0f0f0",
+    margin: 10,
+  },
+  cardContainer1: {
+    width: "45%",
+    borderRadius: 10,
+    padding: 20,
+    backgroundColor: "#f0f0f0",
+    margin: 10,
+  },
+  card: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 15,
   },
-  detailsContainer: {
-    width: "100%",
+  cardRow: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
   },
   label: {
-    color: "gray",
-    marginBottom: 5,
+    color: "#007bff",
+    marginRight: 5,
     fontWeight: "bold",
   },
   detail: {
+    color: "#333",
+    fontWeight: "bold",
+  },
+  cardLabel: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+    textAlign: "center",
+    color: "green",
+  },
+  cardValue: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
     color: "black",
-    marginBottom: 15,
   },
   editIconContainer: {
     position: "absolute",
     top: 10,
     right: 10,
+  },
+  rowContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
 });
 

@@ -101,17 +101,7 @@ const PatientDetails = ({ route }) => {
             <ActivityIndicator size="large" color="#007bff" />
           ) : (
             <>
-              <View style={styles.inlineContainer}>
-                <View style={styles.inlineDetailContainer}>
-                  <Text style={styles.label}>Patient ID:</Text>
-                  <Text style={styles.greenText}>{patient?._id}</Text>
-                </View>
-                <View style={styles.inlineDetailContainer}>
-                  <Text style={styles.label}>Aadhar ID</Text>
-                  <Text style={styles.detail}>{patient.aadharID || "NA"}</Text>
-                </View>
-              </View>
-
+              {/* Patient Details */}
               <View style={styles.inlineContainer}>
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.label}>First Name:</Text>
@@ -121,6 +111,24 @@ const PatientDetails = ({ route }) => {
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.label}>Last Name:</Text>
                   <Text style={styles.detail}>{patient.lastName}</Text>
+                </View>
+                <View style={styles.inlineDetailContainer}>
+                  <Text style={styles.DateText}>Date</Text>
+                  <Text style={styles.detail}>{patient?.date}</Text>
+                </View>
+              </View>
+              <View style={styles.inlineContainer}>
+                <View style={styles.inlineDetailContainer}>
+                  <Text style={styles.label}>Mobile Number</Text>
+                  <Text style={styles.detail}>{patient?.phoneNumber}</Text>
+                </View>
+                <View style={styles.inlineDetailContainer}>
+                  <Text style={styles.label}>Aadhar ID</Text>
+                  <Text style={styles.detail}>{patient.aadharID || "NA"}</Text>
+                </View>
+                <View style={styles.inlineDetailContainer}>
+                  <Text style={styles.DateText}>Time</Text>
+                  <Text style={styles.detail}>{patient?.time}</Text>
                 </View>
               </View>
 
@@ -134,50 +142,61 @@ const PatientDetails = ({ route }) => {
                   <Text style={styles.label}>Gender:</Text>
                   <Text style={styles.detail}>{patient.gender}</Text>
                 </View>
-              </View>
-
-              <View style={styles.inlineContainer}>
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.label}>COVID-19 Positive</Text>
                   <Text style={styles.detail}>
                     {patient.isCovid19Positive ? "Yes" : "No"}
                   </Text>
                 </View>
-                <View style={styles.inlineDetailContainer}>
-                  <Text style={styles.label}>Mobile Number</Text>
-                  <Text style={styles.detail}>{patient?.phoneNumber}</Text>
-                </View>
               </View>
 
-              <View style={styles.detailContainer}>
-                <Text style={styles.Colorlabel}>Diagnosis</Text>
-                <Text style={styles.detail}>{patient?.diagnosis}</Text>
-              </View>
-
-              <View style={styles.detailContainer}>
-                <Text style={styles.Colorlabel}>Treatment</Text>
-                <Text style={styles.detail}>{patient?.treatment}</Text>
-              </View>
-
-              <View style={styles.detailContainer}>
-                <Text style={styles.Colorlabel}>Other Info</Text>
-                <Text style={styles.detail}>{patient?.otherInfo}</Text>
-              </View>
               <View style={styles.inlineContainer}>
                 <View style={styles.inlineDetailContainer}>
-                  <Text style={styles.label}>Date</Text>
-                  <Text style={styles.DateText}>{patient?.date}</Text>
+                  <Text style={styles.Colorlabel}>Diagnosis</Text>
+                  <Text style={styles.detail}>{patient?.diagnosis}</Text>
                 </View>
-
                 <View style={styles.inlineDetailContainer}>
-                  <Text style={styles.label}>Time</Text>
-                  <Text style={styles.DateText}>{patient?.time}</Text>
+                  <Text style={styles.Colorlabel}>Treatment</Text>
+                  <Text style={styles.detail}>{patient?.treatment}</Text>
+                </View>
+              </View>
+              <View style={styles.detailContainer}>
+                <Text style={styles.Colorlabel}>Additional Information</Text>
+                <Text style={styles.detail}>{patient?.otherInfo}</Text>
+              </View>
+
+              <View style={styles.inlineContainer}>
+                <View style={styles.inlineDetailContainer}>
+                  <Text style={styles.label2}>Treated By</Text>
+                  <Text style={styles.detail}>
+                    {patient.treatedBy && patient.treatedBy.length > 0
+                      ? patient.treatedBy[0].staffName || "NA"
+                      : "NA"}
+                  </Text>
+                </View>
+                <View style={styles.inlineDetailContainer}>
+                  <Text style={styles.label2}>PHC</Text>
+                  <Text style={styles.detail}>
+                    {patient.treatedBy && patient.treatedBy.length > 0
+                      ? patient.treatedBy[0].phcName || "NA"
+                      : "NA"}
+                  </Text>
+                </View>
+                <View style={styles.inlineDetailContainer}>
+                  <Text style={styles.label2}>SC</Text>
+                  <Text style={styles.detail}>
+                    {patient.treatedBy && patient.treatedBy.length > 0
+                      ? patient.treatedBy[0].subCenter || "NA"
+                      : "NA"}
+                  </Text>
                 </View>
               </View>
             </>
           )}
         </View>
       </View>
+
+      {/* Revisit Data */}
       <View style={styles.revisitContainer}>
         {sortedRevisitData.length > 0 && (
           <View style={styles.revisitContainer}>
@@ -212,23 +231,72 @@ const PatientDetails = ({ route }) => {
                       }
                     />
                   </View>
+                  <View style={styles.inlineContainer}>
+                    <View style={styles.inlineDetailContainer}>
+                      <Text style={styles.Colorlabel}>Diagnosis</Text>
+                      <Text style={styles.detail}>
+                        {revisit.diagnosis || "NA"}
+                      </Text>
+                    </View>
 
-                  <Text style={styles.Colorlabel}>Diagnosis</Text>
-                  <Text style={styles.detail}>{revisit.diagnosis || "NA"}</Text>
+                    <View style={styles.inlineDetailContainer}>
+                      <Text style={styles.Colorlabel}>Treatment</Text>
+                      <Text style={styles.detail}>
+                        {revisit.treatment || "NA"}
+                      </Text>
+                    </View>
+                  </View>
 
-                  <Text style={styles.Colorlabel}>Treatment</Text>
-                  <Text style={styles.detail}>{revisit.treatment || "NA"}</Text>
+                  <View style={styles.inlineContainer}>
+                    <View style={styles.inlineDetailContainer}>
+                      <Text style={styles.Colorlabel}>
+                        Additional Information
+                      </Text>
+                      <Text style={styles.detail}>
+                        {revisit.otherInfo || "NA"}
+                      </Text>
+                    </View>
+                  </View>
 
-                  <Text style={styles.Colorlabel}>Other Info</Text>
-                  <Text style={styles.detail}>{revisit.otherInfo || "NA"}</Text>
+                  <View style={styles.inlineContainer}>
+                    <View style={styles.inlineDetailContainer}>
+                      <Text style={styles.label2}>Treated By</Text>
+                      <Text style={styles.detail}>
+                        {revisit.treatedBy && revisit.treatedBy.length > 0
+                          ? revisit.treatedBy[0].staffName || "NA"
+                          : "NA"}
+                      </Text>
+                    </View>
+                    <View style={styles.inlineDetailContainer}>
+                      <Text style={styles.label2}>PHC</Text>
+                      <Text style={styles.detail}>
+                        {revisit.treatedBy && revisit.treatedBy.length > 0
+                          ? revisit.treatedBy[0].phcName || "NA"
+                          : "NA"}
+                      </Text>
+                    </View>
+                    <View style={styles.inlineDetailContainer}>
+                      <Text style={styles.label2}>SC</Text>
+                      <Text style={styles.detail}>
+                        {revisit.treatedBy && revisit.treatedBy.length > 0
+                          ? revisit.treatedBy[0].subCenter || "NA"
+                          : "NA"}
+                      </Text>
+                    </View>
+                  </View>
+
                   <View style={styles.inlineContainer}>
                     <View style={styles.inlineDetailContainer}>
                       <Text style={styles.label}>Date</Text>
-                      <Text style={styles.DateText}>{revisit.date}</Text>
+                      <Text style={styles.DateText}>
+                        {revisit.date || "NA"}
+                      </Text>
                     </View>
                     <View style={styles.inlineDetailContainer}>
                       <Text style={styles.label}>Time</Text>
-                      <Text style={styles.DateText}>{revisit.time}</Text>
+                      <Text style={styles.DateText}>
+                        {revisit.time || "NA"}
+                      </Text>
                     </View>
                   </View>
                 </Card>
@@ -265,7 +333,12 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   label: {
-    color: "gray",
+    color: "rgb(22 101 52)",
+    fontWeight: "bold",
+    fontSize: 15,
+  },
+  label2: {
+    color: "red",
     fontWeight: "bold",
     fontSize: 15,
   },
@@ -287,7 +360,6 @@ const styles = StyleSheet.create({
     color: "rgb(219, 39, 119)",
     fontWeight: "bold",
     fontSize: 15,
-    marginBottom: 5,
   },
   detail: {
     fontWeight: "500",
@@ -297,6 +369,7 @@ const styles = StyleSheet.create({
   DateText: {
     color: "darkorange",
     fontWeight: "bold",
+    fontSize: 15,
   },
   inlineContainer: {
     flexDirection: "row",

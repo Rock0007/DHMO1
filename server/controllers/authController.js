@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const { format } = require("date-fns");
 const SubCenterStaff = require("../models/scStaff");
 const PatientDetails = require("../models/PatientDetails");
@@ -254,18 +255,40 @@ const checkExistingRecord = async (req, res) => {
   }
 };
 
-//PatientEntry
+// PatientEntry
 const PatientEntry = async (req, res) => {
   try {
-    const { firstName, age, gender, phoneNumber, aadharID } = req.body;
+    const {
+      firstName,
+      lastName,
+      age,
+      gender,
+      isCovid19Positive,
+      phoneNumber,
+      aadharID,
+      diagnosis,
+      treatment,
+      otherInfo,
+      treatedBy,
+    } = req.body;
 
-    if (!firstName || !age || !gender || !phoneNumber || !aadharID) {
+    if (
+      !firstName ||
+      !age ||
+      !gender ||
+      !phoneNumber ||
+      !aadharID ||
+      !treatedBy ||
+      !treatedBy.staffName ||
+      !treatedBy.staffID ||
+      !treatedBy.phcName ||
+      !treatedBy.subCenter
+    ) {
       return res
         .status(400)
         .json({ message: "Please provide all required fields." });
     }
 
-    // Validate phoneNumber format: should be exactly 10 digits
     if (!/^\d{10}$/.test(phoneNumber)) {
       return res.status(400).json({
         message:
@@ -273,7 +296,6 @@ const PatientEntry = async (req, res) => {
       });
     }
 
-    // Validate AadharID format: should be exactly 12 digits
     if (!/^\d{12}$/.test(aadharID)) {
       return res.status(400).json({
         message: "Invalid AadharID format. Please provide exactly 12 digits.",
@@ -281,7 +303,6 @@ const PatientEntry = async (req, res) => {
     }
 
     const existingPatientPhone = await PatientDetails.findOne({ phoneNumber });
-
     if (existingPatientPhone) {
       return res
         .status(400)
@@ -289,7 +310,6 @@ const PatientEntry = async (req, res) => {
     }
 
     const existingPatientAadhar = await PatientDetails.findOne({ aadharID });
-
     if (existingPatientAadhar) {
       return res
         .status(400)
@@ -298,15 +318,21 @@ const PatientEntry = async (req, res) => {
 
     const newPatient = new PatientDetails({
       firstName,
-      lastName: req.body.lastName || "",
+      lastName: lastName || "",
       age,
       gender,
-      isCovid19Positive: req.body.isCovid19Positive || false,
+      isCovid19Positive: isCovid19Positive || false,
       phoneNumber,
       aadharID,
-      diagnosis: req.body.diagnosis || "",
-      treatment: req.body.treatment || "",
-      otherInfo: req.body.otherInfo || "",
+      diagnosis: diagnosis || "",
+      treatment: treatment || "",
+      otherInfo: otherInfo || "",
+      treatedBy: {
+        staffName: treatedBy.staffName,
+        staffID: treatedBy.staffID,
+        phcName: treatedBy.phcName,
+        subCenter: treatedBy.subCenter,
+      },
     });
 
     const savedPatient = await newPatient.save();
@@ -338,7 +364,7 @@ const PatientEntry = async (req, res) => {
   }
 };
 
-//Get PatientDetails
+// Get PatientDetails
 const getPatientDetails = async (req, res) => {
   try {
     const allPatients = await PatientDetails.find().sort({ date: -1 });
@@ -450,20 +476,37 @@ const editPatientDetailsById = async (req, res) => {
   }
 };
 
-//Delete Patient Details
+//Delete Patient Details within 48hrs
 const deletePatientById = async (req, res) => {
   try {
     const patientId = req.params.id;
 
     if (!patientId) {
-      return res.status(400).json({ message: "Invalid delete request." });
+      return res.status(400).json({
+        message: "Invalid delete request. Please provide a patient ID.",
+      });
+    }
+
+    const existingPatient = await PatientDetails.findById(patientId);
+
+    if (!existingPatient) {
+      return res.status(404).json({ message: "Patient not found." });
+    }
+
+    const creationTimestamp = parseInt(patientId.substring(0, 8), 16) * 1000;
+    const currentTime = new Date().getTime();
+    const hoursDifference = Math.floor(
+      (currentTime - creationTimestamp) / (1000 * 60 * 60)
+    );
+
+    if (hoursDifference > 48) {
+      return res.status(403).json({
+        message:
+          "You can only delete patients within 48 hours from the creation time.",
+      });
     }
 
     const deletedPatient = await PatientDetails.findByIdAndDelete(patientId);
-
-    if (!deletedPatient) {
-      return res.status(404).json({ message: "Patient not found." });
-    }
 
     res.status(200).json({
       message: "Patient deleted successfully",
@@ -475,10 +518,10 @@ const deletePatientById = async (req, res) => {
   }
 };
 
-//Patient Revist
+//POST Patient Revist
 const revisits = async (req, res) => {
   try {
-    const { phoneNumber } = req.body;
+    const { phoneNumber, treatedBy } = req.body;
 
     if (!/^\d{10}$/.test(phoneNumber)) {
       return res.status(400).json({
@@ -488,7 +531,6 @@ const revisits = async (req, res) => {
     }
 
     const existingPatient = await PatientDetails.findOne({ phoneNumber });
-
     if (!existingPatient) {
       return res.status(404).json({
         message:
@@ -502,6 +544,12 @@ const revisits = async (req, res) => {
       diagnosis: diagnosis || "",
       treatment: treatment || "",
       otherInfo: otherInfo || "",
+      treatedBy: {
+        phcName: treatedBy.phcName || "",
+        subCenter: treatedBy.subCenter || "",
+        staffName: treatedBy.staffName || "",
+        staffID: treatedBy.staffID || null,
+      },
     });
 
     const updatedPatient = await existingPatient.save();
@@ -532,7 +580,7 @@ const revisits = async (req, res) => {
   }
 };
 
-//GET ALL REVISISTS DATA
+// GET ALL REVISITS DATA
 const getAllRevisits = async (req, res) => {
   try {
     const allPatients = await PatientDetails.find();
@@ -559,7 +607,7 @@ const getAllRevisits = async (req, res) => {
   }
 };
 
-//Get Revisits Data
+// Get Revisits Data
 const getRevisits = async (req, res) => {
   try {
     const { phoneNumber } = req.params;
@@ -929,7 +977,7 @@ const getLocationCoordinates = async (req, res) => {
 // Mark login attendance
 const loginAttendance = async (req, res) => {
   const staffId = req.params.staffId;
-  const { password } = req.body;
+  const { password, latitude, longitude } = req.body;
 
   try {
     const ObjectId = require("mongoose").Types.ObjectId;
@@ -963,6 +1011,7 @@ const loginAttendance = async (req, res) => {
       attendanceDate: todayDate,
       loginTime: format(new Date(), "HH:mm:ss"),
       status: "Present",
+      location: { latitude, longitude },
     });
 
     await staff.save();
@@ -985,6 +1034,7 @@ const logoutAttendance = async (req, res) => {
     if (!staff) {
       return res.status(404).json({ message: "Staff not found" });
     }
+
     const passwordMatch = await comparePassword(password, staff.password);
     if (!passwordMatch) {
       return res.status(401).json({ message: "Invalid password" });
@@ -1007,7 +1057,7 @@ const logoutAttendance = async (req, res) => {
     }
 
     loginAttendanceToday.logoutTime = format(new Date(), "HH:mm:ss");
-    loginAttendanceToday.workHours = JSON.parse(workHours);
+    loginAttendanceToday.workHours = workHours; // No need to parse workHours, it's already an object
     await staff.save();
 
     return res.status(200).json({ message: "You have logged out" });
@@ -1073,34 +1123,24 @@ const getYearlyPatientData = async (req, res) => {
       return res.status(404).json({ message: "No patients found" });
     }
 
-    // Initialize treatment counts for each month of the year
     const treatmentCounts = Array(12).fill(0);
 
-    // Iterate through all patients
     allPatients.forEach((patient) => {
-      // Extract year from the patient's date
       const year = parseInt(patient.date.split("-")[2]);
-      // Check if the patient's date matches the requested year
       if (year === parseInt(req.params.year)) {
-        // Extract month from the patient's date
         const monthIndex = parseInt(patient.date.split("-")[1]) - 1;
-        // Increment treatment count for the corresponding month
         treatmentCounts[monthIndex]++;
-        // Iterate through revisits
         patient.revisits.forEach((revisit) => {
-          // Extract year and month from the revisit's date
           const revisitYear = parseInt(revisit.date.split("-")[2]);
           const revisitMonthIndex = parseInt(revisit.date.split("-")[1]) - 1;
-          // Check if the revisit's date matches the requested year
+
           if (revisitYear === parseInt(req.params.year)) {
-            // Increment treatment count for the corresponding month
             treatmentCounts[revisitMonthIndex]++;
           }
         });
       }
     });
 
-    // Prepare response data
     const responseData = {
       year: req.params.year,
       treatmentCounts: treatmentCounts,
@@ -1113,21 +1153,26 @@ const getYearlyPatientData = async (req, res) => {
   }
 };
 
-// Helper function to extract year from date
-const extractYearFromDate = (dateString) => {
-  const [day, month, year] = dateString.split("-");
-  return year;
-};
+// Treated By
+const treatedBy = async (req, res) => {
+  try {
+    const { phoneNumber } = req.params;
 
-// Helper function to count MongoDB IDs per year
-const countMongoDBIds = (id, year, yearlyTreatmentCount) => {
-  if (!yearlyTreatmentCount[year]) {
-    yearlyTreatmentCount[year] = {};
-  }
-  if (!yearlyTreatmentCount[year][id]) {
-    yearlyTreatmentCount[year][id] = 1;
-  } else {
-    yearlyTreatmentCount[year][id]++;
+    const patient = await PatientDetails.findOne({ phoneNumber });
+
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    const treatedByData = patient.treatedBy;
+
+    res.status(200).json({
+      message: "TreatedBy data retrieved successfully",
+      treatedByData,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -1162,4 +1207,5 @@ module.exports = {
   getAttendance,
   leaveRequest,
   getYearlyPatientData,
+  treatedBy,
 };

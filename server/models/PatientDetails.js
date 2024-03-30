@@ -1,6 +1,22 @@
 const mongoose = require("mongoose");
 const { format } = require("date-fns");
 
+const treatedBySchema = new mongoose.Schema({
+  staffName: {
+    type: String,
+  },
+  staffID: {
+    type: String,
+    ref: "Staff",
+  },
+  phcName: {
+    type: String,
+  },
+  subCenter: {
+    type: String,
+  },
+});
+
 const revisitSchema = new mongoose.Schema({
   diagnosis: {
     type: String,
@@ -18,6 +34,10 @@ const revisitSchema = new mongoose.Schema({
   time: {
     type: String,
     default: () => format(new Date(), "HH:mm"),
+  },
+  treatedBy: {
+    type: [treatedBySchema],
+    default: [],
   },
 });
 
@@ -65,6 +85,10 @@ const patientDetailsSchema = new mongoose.Schema({
   time: {
     type: String,
     default: () => format(new Date(), "HH:mm"),
+  },
+  treatedBy: {
+    type: [treatedBySchema],
+    default: [],
   },
   revisits: {
     type: [revisitSchema],

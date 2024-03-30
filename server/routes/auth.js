@@ -32,12 +32,13 @@ const {
   leaveRequest,
   getAttendance,
   getYearlyPatientData,
+  treatedBy,
 } = require("../controllers/authController");
 
 router.use(
   cors({
     credentials: true,
-    origin: process.env.ORIGIN,
+    origin: "*",
   })
 );
 
@@ -80,6 +81,7 @@ router.post("/staff/:staffId/login", authenticateToken, loginAttendance);
 router.post("/staff/:staffId/logout", authenticateToken, logoutAttendance);
 router.post("/staff/:staffId/leaverequest", authenticateToken, leaveRequest);
 router.get("/staff/attendance/:staffId", authenticateToken, getAttendance);
+router.get("/patient/:phoneNumber/treatedBy", authenticateToken, treatedBy);
 
 //DATA Charts
 router.get(

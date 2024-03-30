@@ -129,19 +129,7 @@ const HomeDrawer = () => {
           ),
         }}
       />
-      <Drawer.Screen
-        name="Logout"
-        component={Logout}
-        options={{
-          drawerIcon: ({ focused }) => (
-            <ArrowLeftStartOnRectangleIcon
-              name="home"
-              size={18}
-              color={focused ? "blue" : "black"}
-            />
-          ),
-        }}
-      />
+
       <Drawer.Screen
         name="Dashboard"
         component={Dashboard}
@@ -149,6 +137,19 @@ const HomeDrawer = () => {
           drawerIcon: ({ focused }) => (
             <ArrowLeftStartOnRectangleIcon
               name="Dashboard"
+              size={18}
+              color={focused ? "blue" : "black"}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Logout"
+        component={Logout}
+        options={{
+          drawerIcon: ({ focused }) => (
+            <ArrowLeftStartOnRectangleIcon
+              name="home"
               size={18}
               color={focused ? "blue" : "black"}
             />

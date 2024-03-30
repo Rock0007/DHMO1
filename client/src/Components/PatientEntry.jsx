@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -8,7 +8,7 @@ import {
   ScrollView,
   ToastAndroid,
 } from "react-native";
-import { submitPatientEntry } from "../Api/authAPI";
+import { submitPatientEntry, getProfile } from "../Api/authAPI";
 import CheckBox from "react-native-check-box";
 import { useNavigation } from "@react-navigation/native";
 
@@ -23,12 +23,31 @@ const PatientEntry = ({}) => {
   const [otherInfo, setOtherInfo] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [aadharID, setAadharID] = useState("");
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        await getProfile();
+        setLoading(false);
+      } catch (error) {
+        setError(error);
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const handleSubmit = async () => {
     try {
-      const response = await submitPatientEntry({
+      setLoading(true);
+      const profileData = await getProfile();
+      console.log(profileData);
+      const { phcName, subcenterName, fullName, _id } = profileData;
+      await submitPatientEntry({
         firstName,
         lastName,
         age,
@@ -39,9 +58,15 @@ const PatientEntry = ({}) => {
         diagnosis,
         treatment,
         otherInfo,
+        treatedBy: {
+          staffName: fullName,
+          staffID: _id,
+          phcName,
+          subCenter: subcenterName,
+        },
       });
+      setLoading(false);
 
-      console.log("Form submitted successfully:", response);
       ToastAndroid.showWithGravity(
         "Patient entry submitted successfully.",
         ToastAndroid.SHORT,
@@ -62,6 +87,7 @@ const PatientEntry = ({}) => {
       navigation.navigate("Patient Logs");
     } catch (error) {
       console.error("Error submitting form:", error);
+      setLoading(false);
       ToastAndroid.showWithGravity(
         error.message || "An error occurred during patient entry.",
         ToastAndroid.LONG,

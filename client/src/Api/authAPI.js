@@ -2,7 +2,7 @@ import axios from "axios";
 import { ToastAndroid } from "react-native";
 import { BASE_URL } from "@env";
 
-const baseURL = "http://10.106.28.157:8000";
+const baseURL = "http://10.106.17.247:8000";
 
 const authApi = axios.create({
   baseURL,
@@ -111,13 +111,22 @@ export const submitPatientEntry = async (data) => {
     }
   } catch (error) {
     console.error("Patient Entry error:", error);
-    throw error.response?.data || "An error occurred during patient entry.";
+
+    if (error.response && error.response.data) {
+      throw (
+        error.response.data.message || "An error occurred during patient entry."
+      );
+    } else {
+      throw "An error occurred while communicating with the server.";
+    }
   }
 };
 
 export const getAllPatientDetails = async () => {
   try {
-    const response = await authApi.get("/patientdetails");
+    const response = await authApi.get("/patientdetails", {
+      params: { populate: "treatedBy" },
+    });
     return response.data;
   } catch (error) {
     console.error("Get all patient details error:", error);
@@ -169,7 +178,20 @@ export const deletePatientById = async (patientId) => {
     }
   } catch (error) {
     console.error("Delete patient error:", error);
-    throw error.response?.data || "An error occurred during patient deletion.";
+
+    if (error.response) {
+      if (error.response.status === 404) {
+        throw "Patient not found.";
+      } else if (error.response.status === 403) {
+        throw "You can only delete patients within 48 hours from the creation time.";
+      } else {
+        throw (
+          error.response.data || "An error occurred during patient deletion."
+        );
+      }
+    } else {
+      throw "An error occurred while deleting the patient.";
+    }
   }
 };
 
@@ -184,9 +206,17 @@ export const submitRevisit = async (data) => {
     }
   } catch (error) {
     console.error("Revisit Entry error:", error);
-    throw error.response?.data || "An error occurred during revisit entry.";
+
+    if (error.response && error.response.data) {
+      throw (
+        error.response.data.message || "An error occurred during revisit entry."
+      );
+    } else {
+      throw "An error occurred while communicating with the server.";
+    }
   }
 };
+
 export const getRevisitData = async (phoneNumber) => {
   try {
     const response = await authApi.get(`/revisits/${phoneNumber}`);
@@ -332,7 +362,12 @@ export const getTargetLocations = async () => {
   }
 };
 
-export const markLoginAttendance = async (staffId, password) => {
+export const markLoginAttendance = async (
+  staffId,
+  password,
+  latitude,
+  longitude
+) => {
   try {
     if (typeof staffId !== "string" || !staffId.trim()) {
       throw new Error("Invalid staffId");
@@ -340,8 +375,15 @@ export const markLoginAttendance = async (staffId, password) => {
 
     const response = await authApi.post(`/staff/${staffId}/login`, {
       password,
+      latitude,
+      longitude,
     });
-    return response.data;
+
+    if (response.status === 200) {
+      return response.data;
+    } else {
+      throw new Error("Failed to mark login attendance");
+    }
   } catch (error) {
     if (error.response) {
       console.error("Error marking login attendance:", error.response.data);
