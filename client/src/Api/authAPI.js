@@ -124,9 +124,7 @@ export const submitPatientEntry = async (data) => {
 
 export const getAllPatientDetails = async () => {
   try {
-    const response = await authApi.get("/patientdetails", {
-      params: { populate: "treatedBy" },
-    });
+    const response = await authApi.get("/patientdetails");
     return response.data;
   } catch (error) {
     console.error("Get all patient details error:", error);

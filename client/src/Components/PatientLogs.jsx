@@ -29,29 +29,38 @@ const PatientLogs = () => {
   const [loading, setLoading] = useState(true);
   const [patientData, setPatientData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [updateTimestamp, setUpdateTimestamp] = useState(Date.now());
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchAllPatients();
-  }, []);
+    const fetchAllPatients = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllPatientDetails();
+        const sortedData = data.patients.sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        );
 
-  const fetchAllPatients = async () => {
-    try {
-      setLoading(true);
-      const data = await getAllPatientDetails();
-      const sortedData = data.patients.sort((a, b) => {
-        const dateComparison = new Date(b.date) - new Date(a.date);
-        if (dateComparison !== 0) return dateComparison;
-        return new Date(b.time) - new Date(a.time);
-      });
-      setPatientData(sortedData);
-    } catch (error) {
-      setError(error);
-      console.error("Error fetching all patient details:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        const patientsWithRevisitData = await Promise.all(
+          sortedData.map(async (patient) => {
+            const revisitData = await getRevisitData(
+              patient?.phoneNumber || ""
+            );
+            return { ...patient, revisitData };
+          })
+        );
+
+        setPatientData(patientsWithRevisitData || []);
+      } catch (error) {
+        setError(error);
+        console.error("Error fetching all patient details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllPatients();
+  }, [updateTimestamp]);
 
   const handleSearchChange = (query) => {
     setSearchQuery(query);
@@ -66,7 +75,37 @@ const PatientLogs = () => {
   };
 
   const handleDeletePatient = async (patient) => {
-    // Delete patient logic
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this patient?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: async () => {
+            try {
+              await deletePatientById(patient._id);
+              ToastAndroid.show("Patient Deleted", ToastAndroid.SHORT);
+              handleUpdate();
+              navigation.navigate("Patient Entry");
+            } catch (error) {
+              console.error("Error deleting patient:", error);
+              if (error.response && error.response.data) {
+                ToastAndroid.show(error.response.data, ToastAndroid.SHORT);
+              } else {
+                ToastAndroid.show(
+                  "You can only delete patients within 48 hours",
+                  ToastAndroid.SHORT
+                );
+              }
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleRevisitPress = () => {
@@ -74,12 +113,80 @@ const PatientLogs = () => {
   };
 
   const onRefresh = async () => {
-    // Refresh logic
+    setRefreshing(true);
+    try {
+      const data = await getAllPatientDetails();
+      const sortedData = data.patients.sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      );
+
+      const patientsWithRevisitData = await Promise.all(
+        sortedData.map(async (patient) => {
+          const revisitData = await getRevisitData(patient?.phoneNumber || "");
+          return { ...patient, revisitData };
+        })
+      );
+
+      setPatientData(patientsWithRevisitData || []);
+    } catch (error) {
+      console.error("Error refreshing patient data:", error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
-  const renderPatientCard = (patient, index) => {
-    // Render patient card logic
-  };
+  const renderPatientCard = (patient, index) => (
+    <TouchableOpacity
+      key={index}
+      style={styles.patientContainer}
+      activeOpacity={0.2}
+      onPress={() => handlePatientCardPress(patient)}
+    >
+      <View style={styles.inlineContainer}>
+        <View style={styles.inlineDetailContainer}>
+          <Text style={styles.keyField}>Patient Name</Text>
+          <Text>{`${patient.firstName} ${patient.lastName}`}</Text>
+        </View>
+
+        <View style={styles.inlineDetailContainer}>
+          <Text style={styles.keyField}>Age:</Text>
+          <Text>{patient.age || "NA"}</Text>
+        </View>
+        <View style={styles.inlineDetailContainer}>
+          <Text style={styles.keyField}>Date:</Text>
+          <Text style={styles.DateText}>{patient.date || "NA"}</Text>
+        </View>
+      </View>
+
+      <View style={styles.inlineContainer}>
+        <View style={styles.inlineDetailContainer}>
+          <Text style={styles.keyField}>Phone Number</Text>
+          <Text>{patient.phoneNumber || "NA"}</Text>
+        </View>
+        <View style={styles.inlineDetailContainer}>
+          <Text style={styles.keyField}>Aadhar ID</Text>
+          <Text>{patient.aadharID || "NA"}</Text>
+        </View>
+
+        <View style={styles.inlineDetailContainer}>
+          <Text style={styles.keyField}>Time</Text>
+          <Text style={styles.DateText}>{patient.time || "NA"}</Text>
+        </View>
+      </View>
+      <TouchableOpacity
+        style={styles.editIconContainer}
+        onPress={() => handleEditPatient(patient)}
+      >
+        <PencilSquareIcon size={24} color="gray" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.deleteIconContainer}
+        onPress={() => handleDeletePatient(patient)}
+      >
+        <TrashIcon size={24} color="red" />
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
 
   if (loading) {
     return (
@@ -90,7 +197,14 @@ const PatientLogs = () => {
   }
 
   const filteredPatientData = patientData.filter((patient) => {
-    // Filter logic
+    const fullName = `${patient.firstName} ${patient.lastName}`;
+    const lowercaseQuery = searchQuery.toLowerCase();
+
+    return (
+      fullName.toLowerCase().includes(lowercaseQuery) ||
+      patient.phoneNumber.includes(lowercaseQuery) ||
+      patient._id.toLowerCase().includes(lowercaseQuery)
+    );
   });
 
   return (

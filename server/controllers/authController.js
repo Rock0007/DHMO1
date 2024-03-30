@@ -367,7 +367,9 @@ const PatientEntry = async (req, res) => {
 // Get PatientDetails
 const getPatientDetails = async (req, res) => {
   try {
-    const allPatients = await PatientDetails.find().sort({ date: -1 });
+    const allPatients = await PatientDetails.find()
+      .sort({ date: -1, time: -1 })
+      .exec();
 
     if (!allPatients || allPatients.length === 0) {
       return res.status(404).json({ message: "No patients found" });
