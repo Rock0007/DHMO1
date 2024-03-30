@@ -455,4 +455,25 @@ export const GetYearlyPatientData = async (year) => {
   }
 };
 
+export const getStaffEntriesById = async (staffId) => {
+  try {
+    const response = await authApi.get(`/staffEntries/${staffId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching staff entries by ID:", error);
+    if (error.response) {
+      const errorMessage =
+        error.response.data.message || "Failed to fetch staff entries";
+      ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
+      throw new Error(errorMessage);
+    } else if (error.request) {
+      ToastAndroid.show("No response from server", ToastAndroid.SHORT);
+      throw new Error("No response from server");
+    } else {
+      ToastAndroid.show("Request failed", ToastAndroid.SHORT);
+      throw new Error("Request failed");
+    }
+  }
+};
+
 export default authApi;

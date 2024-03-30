@@ -1155,25 +1155,57 @@ const getYearlyPatientData = async (req, res) => {
   }
 };
 
-// Treated By
-const treatedBy = async (req, res) => {
+//Total patientEntries by Staff
+const getStaffEntries = async (req, res) => {
   try {
-    const { phoneNumber } = req.params;
-
-    const patient = await PatientDetails.findOne({ phoneNumber });
-
-    if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
-    }
-
-    const treatedByData = patient.treatedBy;
+    const staffEntries = await PatientDetails.aggregate([
+      { $unwind: "$treatedBy" },
+      {
+        $group: {
+          _id: "$treatedBy.staffID",
+          staffName: { $first: "$treatedBy.staffName" },
+          patientCount: { $sum: 1 },
+        },
+      },
+    ]);
 
     res.status(200).json({
-      message: "TreatedBy data retrieved successfully",
-      treatedByData,
+      message: "Staff entries retrieved successfully",
+      staffEntries,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error retrieving staff entries:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+//Total patientEntries by StaffID
+const getStaffEntriesById = async (req, res) => {
+  try {
+    const { staffId } = req.params;
+
+    const staffEntries = await PatientDetails.aggregate([
+      { $unwind: "$treatedBy" },
+      { $match: { "treatedBy.staffID": staffId } },
+      {
+        $group: {
+          _id: "$treatedBy.staffID",
+          staffName: { $first: "$treatedBy.staffName" },
+          patientCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    if (staffEntries.length === 0) {
+      return res.status(404).json({ message: "Staff entries not found" });
+    }
+
+    res.status(200).json({
+      message: "Staff entries retrieved successfully",
+      staffEntries,
+    });
+  } catch (error) {
+    console.error("Error retrieving staff entries by ID:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -1209,5 +1241,6 @@ module.exports = {
   getAttendance,
   leaveRequest,
   getYearlyPatientData,
-  treatedBy,
+  getStaffEntries,
+  getStaffEntriesById,
 };

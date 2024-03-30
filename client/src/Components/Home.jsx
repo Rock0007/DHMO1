@@ -10,44 +10,45 @@ import {
   RefreshControl,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { getAllPatientDetails } from "../Api/authAPI";
+import { getStaffEntriesById, getProfile } from "../Api/authAPI";
 import { useUser } from "../Contexts/userContext";
 import { PencilSquareIcon } from "react-native-heroicons/outline";
 
 const Home = () => {
   const navigation = useNavigation();
-  const { user, UserProfile } = useUser();
+  const { UserProfile } = useUser();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [staffEntries, setStaffEntries] = useState([]);
+  const [profile, setProfile] = useState(null);
 
   const handleEditProfile = () => {
     navigation.navigate("Edit Profile");
   };
 
-  const onRefresh = React.useCallback(async () => {
+  const fetchProfileAndEntries = async () => {
+    try {
+      setLoading(true);
+      const profileData = await getProfile();
+      setProfile(profileData);
+      const entries = await getStaffEntriesById(profileData._id);
+      setStaffEntries(entries.staffEntries);
+    } catch (error) {
+      console.error("Error fetching profile and staff entries:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
     setRefreshing(true);
-    await UserProfile();
+    await fetchProfileAndEntries();
     setRefreshing(false);
-  }, [UserProfile]);
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await UserProfile();
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [user, UserProfile]);
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007bff" />
-      </View>
-    );
-  }
+    fetchProfileAndEntries();
+  }, []);
 
   return (
     <ScrollView
@@ -72,43 +73,43 @@ const Home = () => {
         <View style={styles.card}>
           <View style={styles.cardRow}>
             <Text style={styles.label}>Name</Text>
-            <Text style={styles.detail}>{user?.fullName || "N/A"}</Text>
+            <Text style={styles.detail}>{profile?.fullName || "N/A"}</Text>
           </View>
 
           <View style={styles.cardRow}>
             <Text style={styles.label}>Phone Number</Text>
-            <Text style={styles.detail}>{user?.phoneNumber || "N/A"}</Text>
+            <Text style={styles.detail}>{profile?.phoneNumber || "N/A"}</Text>
           </View>
         </View>
 
         <View style={styles.card}>
           <View style={styles.cardRow}>
             <Text style={styles.label}>Aadhar ID</Text>
-            <Text style={styles.detail}>{user?.aadharID || "N/A"}</Text>
+            <Text style={styles.detail}>{profile?.aadharID || "N/A"}</Text>
           </View>
 
           <View style={styles.cardRow}>
             <Text style={styles.label}>Role</Text>
-            <Text style={styles.detail}>{user?.role || "N/A"}</Text>
+            <Text style={styles.detail}>{profile?.role || "N/A"}</Text>
           </View>
         </View>
 
         <View style={styles.card}>
           <View style={styles.cardRow}>
             <Text style={styles.label}>PHC</Text>
-            <Text style={styles.detail}>{user?.phcName || "N/A"}</Text>
+            <Text style={styles.detail}>{profile?.phcName || "N/A"}</Text>
           </View>
 
           <View style={styles.cardRow}>
             <Text style={styles.label}>SC</Text>
-            <Text style={styles.detail}>{user?.subcenterName || "N/A"}</Text>
+            <Text style={styles.detail}>{profile?.subcenterName || "N/A"}</Text>
           </View>
         </View>
 
         <View style={styles.card}>
           <View style={styles.cardRow}>
             <Text style={styles.label}>Gmail</Text>
-            <Text style={styles.detail}>{user?.gmail || "N/A"}</Text>
+            <Text style={styles.detail}>{profile?.gmail || "N/A"}</Text>
           </View>
         </View>
       </View>
@@ -117,7 +118,9 @@ const Home = () => {
       <View style={styles.rowContainer}>
         <View style={styles.cardContainer1}>
           <Text style={styles.cardLabel}>Today Entries</Text>
-          <Text style={styles.cardValue}>20</Text>
+          <Text style={styles.cardValue}>
+            {staffEntries.length > 0 ? staffEntries[0].patientCount : "N/A"}
+          </Text>
         </View>
 
         <View style={styles.cardContainer1}>
