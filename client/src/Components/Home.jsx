@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   ScrollView,
   RefreshControl,
+  TouchableWithoutFeedback,
+  Clipboard,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { getStaffEntriesById, getProfile } from "../Api/authAPI";
@@ -50,6 +52,10 @@ const Home = () => {
     fetchProfileAndEntries();
   }, []);
 
+  const handleTextLongPress = (text) => {
+    Clipboard.setString(text);
+  };
+
   return (
     <ScrollView
       contentContainerStyle={styles.contentContainer}
@@ -73,51 +79,88 @@ const Home = () => {
         <View style={styles.card}>
           <View style={styles.cardRow}>
             <Text style={styles.label}>Name</Text>
-            <Text style={styles.detail}>{profile?.fullName || "N/A"}</Text>
+            <TouchableWithoutFeedback
+              onLongPress={() =>
+                handleTextLongPress(profile?.fullName || "N/A")
+              }
+            >
+              <Text style={styles.detail}>{profile?.fullName || "N/A"}</Text>
+            </TouchableWithoutFeedback>
           </View>
 
           <View style={styles.cardRow}>
             <Text style={styles.label}>Phone Number</Text>
-            <Text style={styles.detail}>{profile?.phoneNumber || "N/A"}</Text>
+            <TouchableWithoutFeedback
+              onLongPress={() =>
+                handleTextLongPress(profile?.phoneNumber || "N/A")
+              }
+            >
+              <Text style={styles.detail}>{profile?.phoneNumber || "N/A"}</Text>
+            </TouchableWithoutFeedback>
           </View>
         </View>
 
         <View style={styles.card}>
           <View style={styles.cardRow}>
             <Text style={styles.label}>Aadhar ID</Text>
-            <Text style={styles.detail}>{profile?.aadharID || "N/A"}</Text>
+            <TouchableWithoutFeedback
+              onLongPress={() =>
+                handleTextLongPress(profile?.aadharID || "N/A")
+              }
+            >
+              <Text style={styles.detail}>{profile?.aadharID || "N/A"}</Text>
+            </TouchableWithoutFeedback>
           </View>
 
           <View style={styles.cardRow}>
             <Text style={styles.label}>Role</Text>
-            <Text style={styles.detail}>{profile?.role || "N/A"}</Text>
+            <TouchableWithoutFeedback
+              onLongPress={() => handleTextLongPress(profile?.role || "N/A")}
+            >
+              <Text style={styles.detail}>{profile?.role || "N/A"}</Text>
+            </TouchableWithoutFeedback>
           </View>
         </View>
 
         <View style={styles.card}>
           <View style={styles.cardRow}>
             <Text style={styles.label}>PHC</Text>
-            <Text style={styles.detail}>{profile?.phcName || "N/A"}</Text>
+            <TouchableWithoutFeedback
+              onLongPress={() => handleTextLongPress(profile?.phcName || "N/A")}
+            >
+              <Text style={styles.detail}>{profile?.phcName || "N/A"}</Text>
+            </TouchableWithoutFeedback>
           </View>
 
           <View style={styles.cardRow}>
             <Text style={styles.label}>SC</Text>
-            <Text style={styles.detail}>{profile?.subcenterName || "N/A"}</Text>
+            <TouchableWithoutFeedback
+              onLongPress={() =>
+                handleTextLongPress(profile?.subcenterName || "N/A")
+              }
+            >
+              <Text style={styles.detail}>
+                {profile?.subcenterName || "N/A"}
+              </Text>
+            </TouchableWithoutFeedback>
           </View>
         </View>
 
         <View style={styles.card}>
           <View style={styles.cardRow}>
             <Text style={styles.label}>Gmail</Text>
-            <Text style={styles.detail}>{profile?.gmail || "N/A"}</Text>
+            <TouchableWithoutFeedback
+              onLongPress={() => handleTextLongPress(profile?.gmail || "N/A")}
+            >
+              <Text style={styles.detail}>{profile?.gmail || "N/A"}</Text>
+            </TouchableWithoutFeedback>
           </View>
         </View>
       </View>
 
-      {/* Today Entries and Monthly Present Cards */}
       <View style={styles.rowContainer}>
         <View style={styles.cardContainer1}>
-          <Text style={styles.cardLabel}>Today Entries</Text>
+          <Text style={styles.cardLabel}>Total Entries</Text>
           <Text style={styles.cardValue}>
             {staffEntries.length > 0 ? staffEntries[0].patientCount : "N/A"}
           </Text>
@@ -152,7 +195,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginBottom: 30,
+    marginBottom: 10,
   },
   cardContainer: {
     width: "97%",
@@ -203,8 +246,8 @@ const styles = StyleSheet.create({
   },
   editIconContainer: {
     position: "absolute",
-    top: 10,
-    right: 10,
+    top: 20,
+    right: 20,
   },
   rowContainer: {
     flexDirection: "row",

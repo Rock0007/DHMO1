@@ -256,7 +256,6 @@ const checkExistingRecord = async (req, res) => {
 };
 
 // PatientEntry
-// PatientEntry
 const PatientEntry = async (req, res) => {
   try {
     const {
@@ -295,8 +294,6 @@ const PatientEntry = async (req, res) => {
           "Invalid phoneNumber format. Please provide exactly 10 digits.",
       });
     }
-
-    // Check if aadharID is provided and validate if it's in the correct format
     if (aadharID && !/^\d{12}$/.test(aadharID)) {
       return res.status(400).json({
         message: "Invalid AadharID format. Please provide exactly 12 digits.",
