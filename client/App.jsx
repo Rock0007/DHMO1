@@ -4,14 +4,11 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
 import { UserProvider, useUser, getProfile } from "./src/Contexts/userContext";
 import {
-  HomeIcon,
   UserPlusIcon,
   CheckCircleIcon,
   QueueListIcon,
-  PlusCircleIcon,
   ArrowLeftStartOnRectangleIcon,
   UserCircleIcon,
-  MapPinIcon,
   UserIcon,
 } from "react-native-heroicons/outline";
 import {
@@ -34,6 +31,7 @@ import {
   Dashboard,
   Visualization,
 } from "./src/Components/index";
+import NetworkProvider from "./src/Contexts/NetworkProvider";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -168,240 +166,242 @@ const HomeDrawer = () => {
 };
 const App = () => {
   return (
-    <UserProvider>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Login"
-          screenOptions={{ headerShown: false }}
-        >
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen
-            name="Edit Profile"
-            component={EditProfile}
-            options={{
-              headerShown: true,
-              title: "Edit Profile",
-              headerStyle: {
-                backgroundColor: "white",
-                borderBottomColor: "#f0f0f0",
-                borderBottomWidth: 1,
-              },
-              headerTintColor: "black",
-              headerTitleStyle: {
-                fontWeight: "bold",
-                color: "black",
-              },
-              headerBackTitleVisible: false,
-              headerBackTitleStyle: {
-                color: "black",
-              },
-            }}
-          />
-          <Stack.Screen
-            name="Patient Details"
-            component={PatientDetails}
-            options={{
-              headerShown: true,
-              title: "Patient Details",
-              headerStyle: {
-                backgroundColor: "white",
-                borderBottomColor: "#f0f0f0",
-                borderBottomWidth: 1,
-              },
-              headerTintColor: "black",
-              headerTitleStyle: {
-                fontWeight: "bold",
-                color: "black",
-              },
-              headerBackTitleVisible: false,
-              headerBackTitleStyle: {
-                color: "black",
-              },
-            }}
-          />
-          <Stack.Screen
-            name="Edit PatientDetails"
-            component={EditPatientDetails}
-            options={{
-              headerShown: true,
-              title: "Edit Patient Details",
-              headerStyle: {
-                backgroundColor: "white",
-                borderBottomColor: "#f0f0f0",
-                borderBottomWidth: 1,
-              },
-              headerTintColor: "black",
-              headerTitleStyle: {
-                fontWeight: "bold",
-                color: "black",
-              },
-              headerBackTitleVisible: false,
-              headerBackTitleStyle: {
-                color: "black",
-              },
-            }}
-          />
-          <Stack.Screen
-            name="Revisit"
-            component={Revisit}
-            options={{
-              headerShown: true,
-              title: "Revisit Entry",
-              headerStyle: {
-                backgroundColor: "white",
-                borderBottomColor: "#f0f0f0",
-                borderBottomWidth: 1,
-              },
-              headerTintColor: "black",
-              headerTitleStyle: {
-                fontWeight: "bold",
-                color: "black",
-              },
-              headerBackTitleVisible: false,
-              headerBackTitleStyle: {
-                color: "black",
-              },
-            }}
-          />
-          <Stack.Screen
-            name="Edit Staff"
-            component={EditStaffDetails}
-            options={{
-              headerShown: true,
-              title: "Edit Staff Details",
-              headerStyle: {
-                backgroundColor: "white",
-                borderBottomColor: "#f0f0f0",
-                borderBottomWidth: 1,
-              },
-              headerTintColor: "black",
-              headerTitleStyle: {
-                fontWeight: "bold",
-                color: "black",
-              },
-              headerBackTitleVisible: false,
-              headerBackTitleStyle: {
-                color: "black",
-              },
-            }}
-          />
-          <Stack.Screen
-            name="Attendance"
-            component={ViewAttendance}
-            options={{
-              headerShown: true,
-              title: "Attendance",
-              headerStyle: {
-                backgroundColor: "white",
-                borderBottomColor: "#f0f0f0",
-                borderBottomWidth: 1,
-              },
-              headerTintColor: "black",
-              headerTitleStyle: {
-                fontWeight: "bold",
-                color: "black",
-              },
-              headerBackTitleVisible: false,
-              headerBackTitleStyle: {
-                color: "black",
-              },
-            }}
-          />
+    <NetworkProvider>
+      <UserProvider>
+        <NavigationContainer>
+          <Stack.Navigator
+            initialRouteName="Login"
+            screenOptions={{ headerShown: false }}
+          >
+            <Stack.Screen name="Login" component={Login} />
+            <Stack.Screen
+              name="Edit Profile"
+              component={EditProfile}
+              options={{
+                headerShown: true,
+                title: "Edit Profile",
+                headerStyle: {
+                  backgroundColor: "white",
+                  borderBottomColor: "#f0f0f0",
+                  borderBottomWidth: 1,
+                },
+                headerTintColor: "black",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                  color: "black",
+                },
+                headerBackTitleVisible: false,
+                headerBackTitleStyle: {
+                  color: "black",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Patient Details"
+              component={PatientDetails}
+              options={{
+                headerShown: true,
+                title: "Patient Details",
+                headerStyle: {
+                  backgroundColor: "white",
+                  borderBottomColor: "#f0f0f0",
+                  borderBottomWidth: 1,
+                },
+                headerTintColor: "black",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                  color: "black",
+                },
+                headerBackTitleVisible: false,
+                headerBackTitleStyle: {
+                  color: "black",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Edit PatientDetails"
+              component={EditPatientDetails}
+              options={{
+                headerShown: true,
+                title: "Edit Patient Details",
+                headerStyle: {
+                  backgroundColor: "white",
+                  borderBottomColor: "#f0f0f0",
+                  borderBottomWidth: 1,
+                },
+                headerTintColor: "black",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                  color: "black",
+                },
+                headerBackTitleVisible: false,
+                headerBackTitleStyle: {
+                  color: "black",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Revisit"
+              component={Revisit}
+              options={{
+                headerShown: true,
+                title: "Revisit Entry",
+                headerStyle: {
+                  backgroundColor: "white",
+                  borderBottomColor: "#f0f0f0",
+                  borderBottomWidth: 1,
+                },
+                headerTintColor: "black",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                  color: "black",
+                },
+                headerBackTitleVisible: false,
+                headerBackTitleStyle: {
+                  color: "black",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Edit Staff"
+              component={EditStaffDetails}
+              options={{
+                headerShown: true,
+                title: "Edit Staff Details",
+                headerStyle: {
+                  backgroundColor: "white",
+                  borderBottomColor: "#f0f0f0",
+                  borderBottomWidth: 1,
+                },
+                headerTintColor: "black",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                  color: "black",
+                },
+                headerBackTitleVisible: false,
+                headerBackTitleStyle: {
+                  color: "black",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Attendance"
+              component={ViewAttendance}
+              options={{
+                headerShown: true,
+                title: "Attendance",
+                headerStyle: {
+                  backgroundColor: "white",
+                  borderBottomColor: "#f0f0f0",
+                  borderBottomWidth: 1,
+                },
+                headerTintColor: "black",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                  color: "black",
+                },
+                headerBackTitleVisible: false,
+                headerBackTitleStyle: {
+                  color: "black",
+                },
+              }}
+            />
 
-          <Stack.Screen
-            name="Add Staff"
-            component={AddStaff}
-            options={{
-              headerShown: true,
-              title: "Add Staff",
-              headerStyle: {
-                backgroundColor: "white",
-                borderBottomColor: "#f0f0f0",
-                borderBottomWidth: 1,
-              },
-              headerTintColor: "black",
-              headerTitleStyle: {
-                fontWeight: "bold",
-                color: "black",
-              },
-              headerBackTitleVisible: false,
-              headerBackTitleStyle: {
-                color: "black",
-              },
-            }}
-          />
+            <Stack.Screen
+              name="Add Staff"
+              component={AddStaff}
+              options={{
+                headerShown: true,
+                title: "Add Staff",
+                headerStyle: {
+                  backgroundColor: "white",
+                  borderBottomColor: "#f0f0f0",
+                  borderBottomWidth: 1,
+                },
+                headerTintColor: "black",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                  color: "black",
+                },
+                headerBackTitleVisible: false,
+                headerBackTitleStyle: {
+                  color: "black",
+                },
+              }}
+            />
 
-          <Stack.Screen
-            name="Staff Logs"
-            component={StaffLogs}
-            options={{
-              headerShown: true,
-              title: "Staff Logs",
-              headerStyle: {
-                backgroundColor: "white",
-                borderBottomColor: "#f0f0f0",
-                borderBottomWidth: 1,
-              },
-              headerTintColor: "black",
-              headerTitleStyle: {
-                fontWeight: "bold",
-                color: "black",
-              },
-              headerBackTitleVisible: false,
-              headerBackTitleStyle: {
-                color: "black",
-              },
-            }}
-          />
+            <Stack.Screen
+              name="Staff Logs"
+              component={StaffLogs}
+              options={{
+                headerShown: true,
+                title: "Staff Logs",
+                headerStyle: {
+                  backgroundColor: "white",
+                  borderBottomColor: "#f0f0f0",
+                  borderBottomWidth: 1,
+                },
+                headerTintColor: "black",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                  color: "black",
+                },
+                headerBackTitleVisible: false,
+                headerBackTitleStyle: {
+                  color: "black",
+                },
+              }}
+            />
 
-          <Stack.Screen
-            name="Set Location"
-            component={SetLocation}
-            options={{
-              headerShown: true,
-              title: "Set Location",
-              headerStyle: {
-                backgroundColor: "white",
-                borderBottomColor: "#f0f0f0",
-                borderBottomWidth: 1,
-              },
-              headerTintColor: "black",
-              headerTitleStyle: {
-                fontWeight: "bold",
-                color: "black",
-              },
-              headerBackTitleVisible: false,
-              headerBackTitleStyle: {
-                color: "black",
-              },
-            }}
-          />
-          <Stack.Screen
-            name="Visualization"
-            component={Visualization}
-            options={{
-              headerShown: true,
-              title: "Visualization",
-              headerStyle: {
-                backgroundColor: "white",
-                borderBottomColor: "#f0f0f0",
-                borderBottomWidth: 1,
-              },
-              headerTintColor: "black",
-              headerTitleStyle: {
-                fontWeight: "bold",
-                color: "black",
-              },
-              headerBackTitleVisible: false,
-              headerBackTitleStyle: {
-                color: "black",
-              },
-            }}
-          />
-          <Stack.Screen name="HomeDrawer" component={HomeDrawer} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </UserProvider>
+            <Stack.Screen
+              name="Set Location"
+              component={SetLocation}
+              options={{
+                headerShown: true,
+                title: "Set Location",
+                headerStyle: {
+                  backgroundColor: "white",
+                  borderBottomColor: "#f0f0f0",
+                  borderBottomWidth: 1,
+                },
+                headerTintColor: "black",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                  color: "black",
+                },
+                headerBackTitleVisible: false,
+                headerBackTitleStyle: {
+                  color: "black",
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Visualization"
+              component={Visualization}
+              options={{
+                headerShown: true,
+                title: "Visualization",
+                headerStyle: {
+                  backgroundColor: "white",
+                  borderBottomColor: "#f0f0f0",
+                  borderBottomWidth: 1,
+                },
+                headerTintColor: "black",
+                headerTitleStyle: {
+                  fontWeight: "bold",
+                  color: "black",
+                },
+                headerBackTitleVisible: false,
+                headerBackTitleStyle: {
+                  color: "black",
+                },
+              }}
+            />
+            <Stack.Screen name="HomeDrawer" component={HomeDrawer} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </UserProvider>
+    </NetworkProvider>
   );
 };
 
