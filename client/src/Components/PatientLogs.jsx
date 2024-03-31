@@ -66,6 +66,10 @@ const PatientLogs = () => {
     setSearchQuery(query);
   };
 
+  const handleUpdate = () => {
+    setUpdateTimestamp(Date.now());
+  };
+
   const handlePatientCardPress = (patient) => {
     navigation.navigate("Patient Details", { patient });
   };
@@ -90,16 +94,17 @@ const PatientLogs = () => {
               await deletePatientById(patient._id);
               ToastAndroid.show("Patient Deleted", ToastAndroid.SHORT);
               handleUpdate();
-              navigation.navigate("Patient Entry");
             } catch (error) {
               console.error("Error deleting patient:", error);
               if (error.response && error.response.data) {
                 ToastAndroid.show(error.response.data, ToastAndroid.SHORT);
               } else {
-                ToastAndroid.show(
-                  "You can only delete patients within 48 hours",
-                  ToastAndroid.SHORT
-                );
+                if (
+                  error.message ===
+                  "You can only delete patients within 48 hours"
+                ) {
+                  return;
+                }
               }
             }
           },
@@ -145,12 +150,14 @@ const PatientLogs = () => {
       <View style={styles.inlineContainer}>
         <View style={styles.inlineDetailContainer}>
           <Text style={styles.keyField}>Patient Name</Text>
-          <Text>{`${patient.firstName} ${patient.lastName}`}</Text>
+          <Text
+            style={styles.keyValue}
+          >{`${patient.firstName} ${patient.lastName}`}</Text>
         </View>
 
         <View style={styles.inlineDetailContainer}>
           <Text style={styles.keyField}>Age:</Text>
-          <Text>{patient.age || "NA"}</Text>
+          <Text style={styles.keyValue}>{patient.age || "NA"}</Text>
         </View>
         <View style={styles.inlineDetailContainer}>
           <Text style={styles.keyField}>Date:</Text>
@@ -161,11 +168,11 @@ const PatientLogs = () => {
       <View style={styles.inlineContainer}>
         <View style={styles.inlineDetailContainer}>
           <Text style={styles.keyField}>Phone Number</Text>
-          <Text>{patient.phoneNumber || "NA"}</Text>
+          <Text style={styles.keyValue}>{patient.phoneNumber || "NA"}</Text>
         </View>
         <View style={styles.inlineDetailContainer}>
           <Text style={styles.keyField}>Aadhar ID</Text>
-          <Text>{patient.aadharID || "NA"}</Text>
+          <Text style={styles.keyValue}>{patient.aadharID || "NA"}</Text>
         </View>
 
         <View style={styles.inlineDetailContainer}>
@@ -259,17 +266,18 @@ const PatientLogs = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffff",
   },
   cardContainer: {
     marginTop: 10,
   },
   patientContainer: {
-    borderRadius: 10,
+    borderRadius: 7,
     marginBottom: 15,
     padding: 15,
     borderColor: "gray",
     borderWidth: 1,
+    backgroundColor: "#f0f0f0",
   },
   patientHeading: {
     fontWeight: "bold",
@@ -283,6 +291,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "rgb(22 101 52)",
     marginBottom: 0,
+  },
+  keyValue: {
+    color: "black",
+    fontWeight: "500",
   },
   loadingContainer: {
     flex: 1,
@@ -344,7 +356,7 @@ const styles = StyleSheet.create({
   },
   deleteIconContainer: {
     position: "absolute",
-    top: 95,
+    top: 85,
     right: 20,
   },
   noPatientsContainer: {

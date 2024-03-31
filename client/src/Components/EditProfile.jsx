@@ -11,7 +11,9 @@ import {
   UserIcon,
   PhoneIcon,
   EnvelopeIcon,
-} from "react-native-heroicons/outline";
+  InformationCircleIcon, // Add InformationCircleIcon
+} from "react-native-heroicons/outline"; // Assuming the icon is imported from this package
+
 import { editProfile, checkExistingRecord } from "../Api/authAPI";
 
 const EditProfile = ({ navigation }) => {
@@ -66,11 +68,25 @@ const EditProfile = ({ navigation }) => {
     }
   };
 
+  const handleInfoClick = () => {
+    ToastAndroid.show("All fields must be updated at once", ToastAndroid.SHORT);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.formContainer}>
         <View style={styles.centerContainer}>
           <Text style={styles.heading}>Edit Profile</Text>
+          <TouchableOpacity
+            onPress={handleInfoClick}
+            style={styles.infoButtonContainer}
+          >
+            <InformationCircleIcon
+              size={24}
+              color="#555"
+              style={styles.infoIcon}
+            />
+          </TouchableOpacity>
           <View style={styles.inputContainer}>
             <UserIcon size={18} color="#555" style={styles.icon} />
             <TextInput
@@ -145,6 +161,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 15,
+  },
+  infoButtonContainer: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+  },
+  infoIcon: {
+    top: 13,
+    right: 10,
   },
   icon: {
     marginRight: 10,

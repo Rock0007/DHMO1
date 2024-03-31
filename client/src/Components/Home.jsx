@@ -53,7 +53,11 @@ const Home = () => {
   }, []);
 
   const handleTextLongPress = (text) => {
-    Clipboard.setString(text);
+    try {
+      Clipboard.setString(text);
+    } catch (error) {
+      console.error("Error copying text to clipboard:", error);
+    }
   };
 
   return (
@@ -125,6 +129,7 @@ const Home = () => {
         <View style={styles.card}>
           <View style={styles.cardRow}>
             <Text style={styles.label}>PHC</Text>
+
             <TouchableWithoutFeedback
               onLongPress={() => handleTextLongPress(profile?.phcName || "N/A")}
             >
@@ -134,6 +139,7 @@ const Home = () => {
 
           <View style={styles.cardRow}>
             <Text style={styles.label}>SC</Text>
+
             <TouchableWithoutFeedback
               onLongPress={() =>
                 handleTextLongPress(profile?.subcenterName || "N/A")

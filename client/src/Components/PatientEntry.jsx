@@ -222,7 +222,7 @@ const PatientEntry = ({}) => {
             onChangeText={(text) => setTreatment(text)}
           />
 
-          <Text style={styles.sectionHeading}>Other Information</Text>
+          <Text style={styles.sectionHeading}>Additional Information</Text>
           <TextInput
             style={styles.textArea}
             multiline={true}
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   },
 
   submitButton: {
-    backgroundColor: "#007bff",
+    backgroundColor: "rgb(251 113 133)",
     padding: 15,
     borderRadius: 5,
     alignItems: "center",

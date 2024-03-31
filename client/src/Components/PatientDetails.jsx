@@ -8,6 +8,8 @@ import {
   TextInput,
   ToastAndroid,
   Alert,
+  TouchableWithoutFeedback,
+  Clipboard,
 } from "react-native";
 import { MagnifyingGlassIcon, TrashIcon } from "react-native-heroicons/outline";
 import { Card } from "react-native-paper";
@@ -18,6 +20,10 @@ const PatientDetails = ({ route }) => {
   const [revisitData, setRevisitData] = useState([]);
   const [loadingRevisitData, setLoadingRevisitData] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const handleTextLongPress = (text) => {
+    Clipboard.setString(text);
+  };
 
   useEffect(() => {
     const fetchRevisitData = async () => {
@@ -105,26 +111,64 @@ const PatientDetails = ({ route }) => {
               <View style={styles.inlineContainer}>
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.label}>First Name:</Text>
-                  <Text style={styles.detail}>{patient.firstName}</Text>
+                  <TouchableWithoutFeedback
+                    onLongPress={() =>
+                      handleTextLongPress(patient?.firstName || "N/A")
+                    }
+                  >
+                    <Text style={styles.detail}>
+                      {patient?.firstName || "NA"}
+                    </Text>
+                  </TouchableWithoutFeedback>
                 </View>
 
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.label}>Last Name:</Text>
-                  <Text style={styles.detail}>{patient.lastName}</Text>
+                  <TouchableWithoutFeedback
+                    onLongPress={() =>
+                      handleTextLongPress(patient?.lastName || "N/A")
+                    }
+                  >
+                    <Text style={styles.detail}>
+                      {patient?.lastName || "NA"}
+                    </Text>
+                  </TouchableWithoutFeedback>
                 </View>
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.DateText}>Date</Text>
-                  <Text style={styles.detail}>{patient?.date}</Text>
+                  <TouchableWithoutFeedback
+                    onLongPress={() =>
+                      handleTextLongPress(patient?.date || "N/A")
+                    }
+                  >
+                    <Text style={styles.detail}>{patient?.date || "NA"}</Text>
+                  </TouchableWithoutFeedback>
                 </View>
               </View>
               <View style={styles.inlineContainer}>
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.label}>Mobile Number</Text>
-                  <Text style={styles.detail}>{patient?.phoneNumber}</Text>
+                  <TouchableWithoutFeedback
+                    onLongPress={() =>
+                      handleTextLongPress(patient?.phoneNumber || "N/A")
+                    }
+                  >
+                    <Text style={styles.detail}>
+                      {patient?.phoneNumber || "NA"}
+                    </Text>
+                  </TouchableWithoutFeedback>
                 </View>
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.label}>Aadhar ID</Text>
-                  <Text style={styles.detail}>{patient.aadharID || "NA"}</Text>
+                  <TouchableWithoutFeedback
+                    onLongPress={() =>
+                      handleTextLongPress(patient?.aadharID || "N/A")
+                    }
+                  >
+                    <Text style={styles.detail}>
+                      {patient?.aadharID || "NA"}
+                    </Text>
+                  </TouchableWithoutFeedback>
                 </View>
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.DateText}>Time</Text>
@@ -135,17 +179,17 @@ const PatientDetails = ({ route }) => {
               <View style={styles.inlineContainer}>
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.label}>Age:</Text>
-                  <Text style={styles.detail}>{patient.age}</Text>
+                  <Text style={styles.detail}>{patient?.age}</Text>
                 </View>
 
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.label}>Gender:</Text>
-                  <Text style={styles.detail}>{patient.gender}</Text>
+                  <Text style={styles.detail}>{patient?.gender}</Text>
                 </View>
                 <View style={styles.inlineDetailContainer}>
-                  <Text style={styles.label}>COVID-19 Positive</Text>
+                  <Text style={styles.label}>COVID</Text>
                   <Text style={styles.detail}>
-                    {patient.isCovid19Positive ? "Yes" : "No"}
+                    {patient?.isCovid19Positive ? "Yes" : "No"}
                   </Text>
                 </View>
               </View>
@@ -153,16 +197,40 @@ const PatientDetails = ({ route }) => {
               <View style={styles.inlineContainer}>
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.Colorlabel}>Diagnosis</Text>
-                  <Text style={styles.detail}>{patient?.diagnosis}</Text>
+                  <TouchableWithoutFeedback
+                    onLongPress={() =>
+                      handleTextLongPress(patient?.diagnosis || "N/A")
+                    }
+                  >
+                    <Text style={styles.detail}>
+                      {patient?.diagnosis || "NA"}
+                    </Text>
+                  </TouchableWithoutFeedback>
                 </View>
                 <View style={styles.inlineDetailContainer}>
                   <Text style={styles.Colorlabel}>Treatment</Text>
-                  <Text style={styles.detail}>{patient?.treatment}</Text>
+                  <TouchableWithoutFeedback
+                    onLongPress={() =>
+                      handleTextLongPress(patient?.treatment || "N/A")
+                    }
+                  >
+                    <Text style={styles.detail}>
+                      {patient?.treatment || "NA"}
+                    </Text>
+                  </TouchableWithoutFeedback>
                 </View>
               </View>
               <View style={styles.detailContainer}>
                 <Text style={styles.Colorlabel}>Additional Information</Text>
-                <Text style={styles.detail}>{patient?.otherInfo}</Text>
+                <TouchableWithoutFeedback
+                  onLongPress={() =>
+                    handleTextLongPress(patient?.otherInfo || "N/A")
+                  }
+                >
+                  <Text style={styles.detail}>
+                    {patient?.otherInfo || "NA"}
+                  </Text>
+                </TouchableWithoutFeedback>
               </View>
 
               <View style={styles.inlineContainer}>

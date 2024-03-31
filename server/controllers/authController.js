@@ -164,7 +164,7 @@ const logout = (req, res) => {
     .json({ message: "Logout successful" });
 };
 
-//EditProfile
+// EditProfile
 const editProfile = async (req, res) => {
   try {
     const { userId } = req.user;
@@ -323,7 +323,7 @@ const PatientEntry = async (req, res) => {
       gender,
       isCovid19Positive: isCovid19Positive || false,
       phoneNumber,
-      aadharID,
+      aadharID: aadharID || null,
       diagnosis: diagnosis || "",
       treatment: treatment || "",
       otherInfo: otherInfo || "",

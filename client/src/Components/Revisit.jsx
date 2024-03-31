@@ -151,7 +151,7 @@ const Revisit = ({ patientPhoneNumber }) => {
         style={styles.submitButton}
         onPress={handleRevisitSubmit}
       >
-        <Text style={styles.buttonText}>Save Revisit</Text>
+        <Text style={styles.buttonText}>Save</Text>
       </TouchableOpacity>
     </ScrollView>
   );

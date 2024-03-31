@@ -112,13 +112,17 @@ export const submitPatientEntry = async (data) => {
   } catch (error) {
     console.error("Patient Entry error:", error);
 
+    let errorMessage = "An error occurred during patient entry.";
+
     if (error.response && error.response.data) {
-      throw (
-        error.response.data.message || "An error occurred during patient entry."
-      );
-    } else {
-      throw "An error occurred while communicating with the server.";
+      if (typeof error.response.data === "string") {
+        errorMessage = error.response.data;
+      } else if (error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
     }
+
+    throw errorMessage;
   }
 };
 
