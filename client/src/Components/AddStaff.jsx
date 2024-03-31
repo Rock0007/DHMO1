@@ -112,8 +112,6 @@ const StaffRegistration = ({ navigation }) => {
         return;
       }
 
-      // Continue with the registration process if all checks pass
-
       const formData = {
         fullName,
         age,
@@ -137,8 +135,7 @@ const StaffRegistration = ({ navigation }) => {
       );
 
       resetFormFields();
-
-      navigation.navigate("Home");
+      navigation.navigate("Admin");
     } catch (error) {
       console.error(error);
 

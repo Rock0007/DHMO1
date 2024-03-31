@@ -1196,10 +1196,6 @@ const getStaffEntriesById = async (req, res) => {
       },
     ]);
 
-    if (staffEntries.length === 0) {
-      return res.status(404).json({ message: "Staff entries not found" });
-    }
-
     res.status(200).json({
       message: "Staff entries retrieved successfully",
       staffEntries,

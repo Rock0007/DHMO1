@@ -1,4 +1,3 @@
-// LeftNavbar.jsx
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import {
@@ -9,11 +8,6 @@ import { Bars3BottomLeftIcon } from "react-native-heroicons/solid";
 
 const LeftNavbar = (props) => {
   const { navigation } = props;
-
-  const navigateToScreen = (screenName) => {
-    navigation.navigate(screenName);
-    navigation.closeDrawer();
-  };
 
   return (
     <DrawerContentScrollView {...props}>
@@ -36,10 +30,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f3f2",
   },
   icon: {
-    marginLeft: 8, // Adjust the left margin for the icon
+    marginLeft: 8,
   },
   menuText: {
-    marginLeft: 29, // Adjust the left margin for the menu text
+    marginLeft: 29,
     fontSize: 20,
     fontWeight: "bold",
   },
