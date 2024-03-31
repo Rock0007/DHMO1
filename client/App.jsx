@@ -74,8 +74,6 @@ const HomeDrawer = () => {
     });
   };
 
-  console.log("userRoles", userRoles);
-
   return (
     <Drawer.Navigator drawerContent={(props) => <LeftNavbar {...props} />}>
       <Drawer.Screen
