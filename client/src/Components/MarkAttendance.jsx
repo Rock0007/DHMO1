@@ -20,15 +20,16 @@ const TargetLocationValidator = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [isWithinTargetLocation, setIsWithinTargetLocation] = useState(false);
   const [showMarkAttendance, setShowMarkAttendance] = useState(false);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const [isLocationPermissionGranted, setLocationPermissionGranted] =
+    useState(false);
 
   const fetchData = async () => {
     setIsLoading(true);
+    setErrorMsg(null);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
+      setLocationPermissionGranted(status === "granted");
+
       if (status !== "granted") {
         throw new Error("Permission to access location was denied");
       }
@@ -42,62 +43,23 @@ const TargetLocationValidator = ({ navigation }) => {
 
       const currentLocation = await Location.getCurrentPositionAsync({});
       setLocation(currentLocation.coords);
-      const isWithinAnyRadius = targetCoordinates.some((target) =>
-        geolib.isPointWithinRadius(
-          {
-            latitude: currentLocation.coords.latitude,
-            longitude: currentLocation.coords.longitude,
-          },
-          target,
-          1000
-        )
-      );
-      setShowMarkAttendance(isWithinAnyRadius);
-      setIsWithinTargetLocation(isWithinAnyRadius);
     } catch (error) {
       console.error("Error:", error);
       setErrorMsg(error.message || "Failed to fetch data");
-      handleLocationError(error);
     } finally {
       setIsLoading(false);
       setRefreshing(false);
     }
   };
 
-  const handleLocationError = (error) => {
-    if (error.code === "E_LOCATION_SERVICES_DISABLED") {
-      Alert.alert(
-        "Location Services Disabled",
-        "Please enable location services to use this feature.",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              Location.installWebGeolocationPolyfill();
-              fetchData();
-            },
-          },
-        ]
-      );
-    } else if (error.code === "E_LOCATION_UNAVAILABLE") {
-      Alert.alert(
-        "Location Unavailable",
-        "Unable to retrieve location. Please try again later."
-      );
-    } else if (error.code === "E_LOCATION_TIMEOUT") {
-      Alert.alert(
-        "Location Timeout",
-        "Request timed out. Please try again later."
-      );
-    } else {
-      Alert.alert("Error", "An error occurred. Please try again later.");
-    }
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
   };
 
-  const onRefresh = () => {
-    setRefreshing(true);
+  useEffect(() => {
     fetchData();
-  };
+  }, []);
 
   useEffect(() => {
     if (!location || isLoading || errorMsg) return;
@@ -112,12 +74,51 @@ const TargetLocationValidator = ({ navigation }) => {
     );
 
     setIsWithinTargetLocation(isWithinAnyRadius);
-    setShowMarkAttendance(isWithinAnyRadius);
-  }, [location, isLoading, errorMsg, targetCoordinates]);
+    setShowMarkAttendance(isWithinAnyRadius && isLocationPermissionGranted);
+  }, [
+    location,
+    isLoading,
+    errorMsg,
+    targetCoordinates,
+    isLocationPermissionGranted,
+  ]);
 
   const handleMarkAttendance = () => {
-    // Navigate to "View Attendance" screen
     navigation.navigate("Attendance");
+  };
+
+  const handleLocationError = (error) => {
+    switch (error.code) {
+      case "E_LOCATION_SERVICES_DISABLED":
+        Alert.alert(
+          "Location Services Disabled",
+          "Please enable location services to use this feature.",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                Location.installWebGeolocationPolyfill();
+                fetchData();
+              },
+            },
+          ]
+        );
+        break;
+      case "E_LOCATION_UNAVAILABLE":
+        Alert.alert(
+          "Location Unavailable",
+          "Unable to retrieve location. Please try again later."
+        );
+        break;
+      case "E_LOCATION_TIMEOUT":
+        Alert.alert(
+          "Location Timeout",
+          "Request timed out. Please try again later."
+        );
+        break;
+      default:
+        Alert.alert("Error", "An error occurred. Please try again later.");
+    }
   };
 
   let validationMessage;
@@ -142,7 +143,7 @@ const TargetLocationValidator = ({ navigation }) => {
       style={styles.container}
       contentContainerStyle={{ paddingBottom: 10 }}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
       }
     >
       <View style={styles.currentLocationContainer}>

@@ -71,6 +71,7 @@ const Login = () => {
       source={require("../Assets/LoginBg.png")}
       style={styles.backgroundImage}
       onLoadEnd={handleImageLoad}
+      resizeMode="cover"
     >
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -114,7 +115,6 @@ const styles = StyleSheet.create({
   },
   backgroundImage: {
     flex: 1,
-    resizeMode: "cover",
   },
   inputContainer: {
     top: 200,
