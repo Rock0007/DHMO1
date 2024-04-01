@@ -1,24 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  StyleSheet,
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  ToastAndroid,
+  StyleSheet,
+  ImageBackground,
   SafeAreaView,
+  ToastAndroid,
+  ActivityIndicator,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import Header from "../Components/Header";
 import { login as authApiLogin } from "../Api/authAPI";
 import { useUser } from "../Contexts/userContext";
-import { ArrowRightIcon, LockClosedIcon } from "react-native-heroicons/outline";
 
 const Login = () => {
-  const navigation = useNavigation();
-  const { login } = useUser();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const navigation = useNavigation();
+  const { login, user } = useUser();
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkLoginStatus = async () => {
+      try {
+        const userToken = await AsyncStorage.getItem("userToken");
+        if (userToken) {
+          navigation.navigate("HomeDrawer");
+        } else {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Error checking login status:", error);
+        setIsLoading(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
 
   const handleLogin = async () => {
     try {
@@ -26,8 +47,10 @@ const Login = () => {
         ToastAndroid.show("All fields must be filled", ToastAndroid.SHORT);
         return;
       }
-
       const response = await authApiLogin(phoneNumber, password);
+      const token = response.token;
+      await AsyncStorage.setItem("userToken", token);
+
       login(response);
       ToastAndroid.show("Login successful", ToastAndroid.SHORT);
       navigation.navigate("HomeDrawer");
@@ -39,112 +62,91 @@ const Login = () => {
     }
   };
 
+  const handleImageLoad = () => {
+    setIsLoading(false);
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Header />
-      <View style={styles.formContainer}>
-        <View style={styles.form}>
-          <Text style={styles.formText}>Login</Text>
-          <View style={styles.iconInputContainer}>
-            <ArrowRightIcon name="home" size={18} style={styles.icon} />
+    <ImageBackground
+      source={require("../Assets/LoginBg.png")}
+      style={styles.backgroundImage}
+      onLoadEnd={handleImageLoad}
+    >
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="white" />
+        </View>
+      ) : (
+        <SafeAreaView style={styles.container}>
+          <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              placeholder="Phone Number"
-              placeholderTextColor="#aaa"
+              placeholder="Staff ID"
+              placeholderTextColor="rgba(255, 255, 255, 0.5)"
               keyboardType="numeric"
               value={phoneNumber}
               onChangeText={setPhoneNumber}
+              maxLength={10}
             />
-          </View>
-          <View style={styles.iconInputContainer}>
-            <LockClosedIcon name="home" size={18} style={styles.icon} />
             <TextInput
               style={styles.input}
               placeholder="Password"
-              placeholderTextColor="#aaa"
+              placeholderTextColor="rgba(255, 255, 255, 0.5)"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
             />
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+              <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.submitButton} onPress={handleLogin}>
-            <Text style={styles.submitButtonText}>Submit</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </SafeAreaView>
+        </SafeAreaView>
+      )}
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 25,
-    flex: 1,
-    backgroundColor: "#f0f0f0",
-  },
-  formContainer: {
     flex: 1,
     justifyContent: "center",
-    width: "85%",
-    alignSelf: "center",
-  },
-  form: {
-    width: "100%",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    padding: 20,
-    backgroundColor: "white",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
-  formText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 20, // Decreased margin
-    color: "#555",
+  backgroundImage: {
+    flex: 1,
+    resizeMode: "cover",
   },
-  iconInputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 15, // Decreased margin
-    width: "100%", // Adjusted width
-  },
-  icon: {
-    color: "black",
-    marginRight: 10, // Added margin
+  inputContainer: {
+    top: 200,
+    width: "60%",
   },
   input: {
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingLeft: 10,
-    flex: 1,
-  },
-  submitButton: {
-    backgroundColor: "#007bff",
-    padding: 10,
-    borderRadius: 5,
-    width: "90%",
-    alignItems: "center",
-    marginTop: 5,
-    marginLeft: 24,
-  },
-  submitButtonText: {
+    width: "100%",
+    height: 50,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    marginBottom: 20,
     color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 18,
   },
-  toastMessage: {
-    marginBottom: 16,
+  button: {
+    width: "100%",
+    height: 50,
+    backgroundColor: "rgba(16, 58, 28, 0.5)",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

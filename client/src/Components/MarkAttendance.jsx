@@ -6,6 +6,7 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import * as Location from "expo-location";
 import * as geolib from "geolib";
@@ -18,6 +19,7 @@ const TargetLocationValidator = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isWithinTargetLocation, setIsWithinTargetLocation] = useState(false);
+  const [showMarkAttendance, setShowMarkAttendance] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -40,12 +42,55 @@ const TargetLocationValidator = ({ navigation }) => {
 
       const currentLocation = await Location.getCurrentPositionAsync({});
       setLocation(currentLocation.coords);
+      const isWithinAnyRadius = targetCoordinates.some((target) =>
+        geolib.isPointWithinRadius(
+          {
+            latitude: currentLocation.coords.latitude,
+            longitude: currentLocation.coords.longitude,
+          },
+          target,
+          1000
+        )
+      );
+      setShowMarkAttendance(isWithinAnyRadius);
+      setIsWithinTargetLocation(isWithinAnyRadius);
     } catch (error) {
       console.error("Error:", error);
       setErrorMsg(error.message || "Failed to fetch data");
+      handleLocationError(error);
     } finally {
       setIsLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const handleLocationError = (error) => {
+    if (error.code === "E_LOCATION_SERVICES_DISABLED") {
+      Alert.alert(
+        "Location Services Disabled",
+        "Please enable location services to use this feature.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              Location.installWebGeolocationPolyfill();
+              fetchData();
+            },
+          },
+        ]
+      );
+    } else if (error.code === "E_LOCATION_UNAVAILABLE") {
+      Alert.alert(
+        "Location Unavailable",
+        "Unable to retrieve location. Please try again later."
+      );
+    } else if (error.code === "E_LOCATION_TIMEOUT") {
+      Alert.alert(
+        "Location Timeout",
+        "Request timed out. Please try again later."
+      );
+    } else {
+      Alert.alert("Error", "An error occurred. Please try again later.");
     }
   };
 
@@ -67,6 +112,7 @@ const TargetLocationValidator = ({ navigation }) => {
     );
 
     setIsWithinTargetLocation(isWithinAnyRadius);
+    setShowMarkAttendance(isWithinAnyRadius);
   }, [location, isLoading, errorMsg, targetCoordinates]);
 
   const handleMarkAttendance = () => {
@@ -115,7 +161,7 @@ const TargetLocationValidator = ({ navigation }) => {
         )}
       </View>
       <Text style={validationMessageStyles}>{validationMessage}</Text>
-      {!isLoading && isWithinTargetLocation && (
+      {!isLoading && showMarkAttendance && (
         <TouchableOpacity
           onPress={handleMarkAttendance}
           style={styles.buttonContainer}

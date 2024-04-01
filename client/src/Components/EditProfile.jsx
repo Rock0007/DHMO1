@@ -103,6 +103,7 @@ const EditProfile = ({ navigation }) => {
               style={styles.input}
               placeholder="Phone Number"
               value={phoneNumber}
+              maxLength={10}
               onChangeText={(text) => setPhoneNumber(text)}
             />
           </View>

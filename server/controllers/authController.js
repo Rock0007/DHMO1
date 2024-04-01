@@ -117,13 +117,13 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "8h",
+      expiresIn: "10h",
     });
 
     res
       .status(200)
       .cookie("token", token)
-      .json({ message: "Login successful" });
+      .json({ message: "Login successful", token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });

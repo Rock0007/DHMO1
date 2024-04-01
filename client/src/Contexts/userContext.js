@@ -1,22 +1,29 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { ToastAndroid } from "react-native";
+import { ToastAndroid, View, ActivityIndicator } from "react-native";
 import { getProfile } from "../Api/authAPI";
 import { ROLES } from "../AccessControl/Roles";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const UserContext = createContext();
-
 const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userRoles, setUserRoles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const profile = await getProfile();
-        login(profile);
+        const token = await AsyncStorage.getItem("userToken");
+        if (token) {
+          const profile = await getProfile();
+          login(profile);
+        } else {
+          setIsLoading(false);
+        }
       } catch (error) {
         console.error("Error fetching user profile:", error);
         ToastAndroid.show("Failed to fetch user profile", ToastAndroid.SHORT);
+        setIsLoading(false);
       }
     };
 
@@ -26,11 +33,18 @@ const UserProvider = ({ children }) => {
   const login = (userData) => {
     setUser(userData);
     setUserRoles(userData.role || []);
+    setIsLoading(false);
   };
 
-  const logout = () => {
-    setUser(null);
-    setUserRoles([]);
+  const logout = async () => {
+    try {
+      await AsyncStorage.removeItem("userToken");
+      setUser(null);
+      setUserRoles([]);
+    } catch (error) {
+      console.error("Error removing token:", error);
+      ToastAndroid.show("Failed to remove user token", ToastAndroid.SHORT);
+    }
   };
 
   const hasRole = (role) => {
@@ -39,7 +53,7 @@ const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider value={{ user, login, logout, hasRole, ROLES }}>
-      {children}
+      {isLoading ? <LoadingIndicator /> : children}
     </UserContext.Provider>
   );
 };
@@ -53,3 +67,9 @@ const useUser = () => {
 };
 
 export { UserProvider, useUser, getProfile };
+
+const LoadingIndicator = () => (
+  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <ActivityIndicator size="large" color="gray" />
+  </View>
+);
