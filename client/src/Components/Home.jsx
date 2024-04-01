@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   Image,
-  ActivityIndicator,
   TouchableOpacity,
   ScrollView,
   RefreshControl,
@@ -12,17 +11,20 @@ import {
   Clipboard,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { getStaffEntriesById, getProfile } from "../Api/authAPI";
-import { useUser } from "../Contexts/userContext";
+import {
+  getStaffEntriesById,
+  getProfile,
+  getAttendanceCount,
+} from "../Api/authAPI";
 import { PencilSquareIcon } from "react-native-heroicons/outline";
 
 const Home = () => {
   const navigation = useNavigation();
-  const { UserProfile } = useUser();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [staffEntries, setStaffEntries] = useState([]);
   const [profile, setProfile] = useState(null);
+  const [presentDays, setPresentDays] = useState(0); // State to store present days
 
   const handleEditProfile = () => {
     navigation.navigate("Edit Profile");
@@ -35,6 +37,9 @@ const Home = () => {
       setProfile(profileData);
       const entries = await getStaffEntriesById(profileData._id);
       setStaffEntries(entries.staffEntries);
+
+      const presentDays = await getAttendanceCount(profileData._id);
+      setPresentDays(presentDays);
     } catch (error) {
       console.error("Error fetching profile and staff entries:", error);
     } finally {
@@ -174,9 +179,11 @@ const Home = () => {
 
         <View style={styles.cardContainer1}>
           <Text style={[styles.cardLabel, { color: "orange" }]}>
-            Monthly Present
+            Total Present Days
           </Text>
-          <Text style={styles.cardValue}>10</Text>
+          <Text style={styles.cardValue}>
+            {presentDays !== 0 ? presentDays : "N/A"}
+          </Text>
         </View>
       </View>
     </ScrollView>

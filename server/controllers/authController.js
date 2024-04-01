@@ -1116,6 +1116,28 @@ const getAttendance = async (req, res) => {
   }
 };
 
+//GET Staff Attendnace Count
+const getAttendanceCount = async (req, res) => {
+  const staffId = req.params.staffId;
+
+  try {
+    const staff = await SubCenterStaff.findById(staffId);
+
+    if (!staff) {
+      return res.status(404).json({ message: "Staff not found" });
+    }
+
+    const presentDaysCount = staff.attendance.filter(
+      (record) => record.status === "Present"
+    ).length;
+
+    res.status(200).json({ presentDaysCount });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 //Get Patient Yearly Data
 const getYearlyPatientData = async (req, res) => {
   try {
@@ -1235,6 +1257,7 @@ module.exports = {
   logoutAttendance,
   logoutAttendance,
   getAttendance,
+  getAttendanceCount,
   leaveRequest,
   getYearlyPatientData,
   getStaffEntries,

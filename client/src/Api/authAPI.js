@@ -438,6 +438,16 @@ export const GetAttendance = async (staffId) => {
   }
 };
 
+export const getAttendanceCount = async (staffId) => {
+  try {
+    const response = await authApi.get(`/staff/attendance/count/${staffId}`);
+    return response.data.presentDaysCount;
+  } catch (error) {
+    console.error("Error fetching attendance count:", error);
+    throw error;
+  }
+};
+
 export const GetYearlyPatientData = async (year) => {
   try {
     const response = await authApi.get(`/patients/yearly/data/${year}`);
