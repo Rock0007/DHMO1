@@ -23,7 +23,6 @@ const Login = () => {
   const { login, user } = useUser();
 
   useEffect(() => {
-    // Check if user is already logged in
     const checkLoginStatus = async () => {
       try {
         const userToken = await AsyncStorage.getItem("userToken");
@@ -39,7 +38,7 @@ const Login = () => {
     };
 
     checkLoginStatus();
-  }, []);
+  }, [user]);
 
   const handleLogin = async () => {
     try {

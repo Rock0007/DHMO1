@@ -171,7 +171,7 @@ const Home = () => {
 
       <View style={styles.rowContainer}>
         <View style={styles.cardContainer1}>
-          <Text style={styles.cardLabel}>Total Entries</Text>
+          <Text style={styles.cardLabel}>Total Patient Entries</Text>
           <Text style={styles.cardValue}>
             {staffEntries.length > 0 ? staffEntries[0].patientCount : "N/A"}
           </Text>
