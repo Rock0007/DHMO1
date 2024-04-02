@@ -323,7 +323,7 @@ const PatientEntry = async (req, res) => {
       gender,
       isCovid19Positive: isCovid19Positive || false,
       phoneNumber,
-      aadharID: aadharID || null,
+      aadharID: aadharID || "",
       diagnosis: diagnosis || "",
       treatment: treatment || "",
       otherInfo: otherInfo || "",
@@ -368,7 +368,7 @@ const PatientEntry = async (req, res) => {
 const getPatientDetails = async (req, res) => {
   try {
     const allPatients = await PatientDetails.find()
-      .sort({ date: -1, time: -1 })
+      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
       .exec();
 
     if (!allPatients || allPatients.length === 0) {

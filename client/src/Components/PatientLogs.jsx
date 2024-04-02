@@ -37,12 +37,8 @@ const PatientLogs = () => {
       try {
         setLoading(true);
         const data = await getAllPatientDetails();
-        const sortedData = data.patients.sort(
-          (a, b) => new Date(b.date) - new Date(a.date)
-        );
-
         const patientsWithRevisitData = await Promise.all(
-          sortedData.map(async (patient) => {
+          data.patients.map(async (patient) => {
             const revisitData = await getRevisitData(
               patient?.phoneNumber || ""
             );
@@ -101,10 +97,18 @@ const PatientLogs = () => {
               } else {
                 if (
                   error.message ===
-                  "You can only delete patients within 48 hours"
+                  "You can only delete patients within 48 hours from the creation time"
                 ) {
+                  ToastAndroid.show(
+                    "You can only delete patients within 48 hours",
+                    ToastAndroid.SHORT
+                  );
                   return;
                 }
+                ToastAndroid.show(
+                  "You can only delete patients within 48 hours",
+                  ToastAndroid.SHORT
+                );
               }
             }
           },

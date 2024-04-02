@@ -41,60 +41,64 @@ const revisitSchema = new mongoose.Schema({
   },
 });
 
-const patientDetailsSchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: true,
+const patientDetailsSchema = new mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
+      type: String,
+    },
+    age: {
+      type: Number,
+      required: true,
+    },
+    gender: {
+      type: String,
+      required: true,
+    },
+    isCovid19Positive: {
+      type: Boolean,
+    },
+    phoneNumber: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    aadharID: {
+      type: String,
+      sparse: true,
+      default: null,
+    },
+    diagnosis: {
+      type: String,
+    },
+    treatment: {
+      type: String,
+    },
+    otherInfo: {
+      type: String,
+    },
+    date: {
+      type: String,
+      default: () => format(new Date(), "dd-MM-yyyy"),
+    },
+    time: {
+      type: String,
+      default: () => format(new Date(), "HH:mm"),
+    },
+    treatedBy: {
+      type: [treatedBySchema],
+      default: [],
+    },
+    revisits: {
+      type: [revisitSchema],
+      default: [],
+    },
   },
-  lastName: {
-    type: String,
-  },
-  age: {
-    type: Number,
-    required: true,
-  },
-  gender: {
-    type: String,
-    required: true,
-  },
-  isCovid19Positive: {
-    type: Boolean,
-  },
-  phoneNumber: {
-    type: String,
-    unique: true,
-    required: true,
-  },
-  aadharID: {
-    type: String,
-    unique: true,
-  },
-  diagnosis: {
-    type: String,
-  },
-  treatment: {
-    type: String,
-  },
-  otherInfo: {
-    type: String,
-  },
-  date: {
-    type: String,
-    default: () => format(new Date(), "dd-MM-yyyy"),
-  },
-  time: {
-    type: String,
-    default: () => format(new Date(), "HH:mm"),
-  },
-  treatedBy: {
-    type: [treatedBySchema],
-    default: [],
-  },
-  revisits: {
-    type: [revisitSchema],
-    default: [],
-  },
-});
+  { timestamps: true }
+);
 
 const PatientDetails = mongoose.model("PatientDetails", patientDetailsSchema);
 
