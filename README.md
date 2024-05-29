@@ -1,6 +1,6 @@
 # Web Scraping with Beautiful Soup and Selenium
 
-```## Overview
+## Overview
 
 This example contains scripts and instructions for scraping dynamic websites using Beautiful Soup (Bs4) and Selenium. The scraping process is demonstrated using the Hornbacher's website as an example.
 
@@ -46,4 +46,4 @@ This example contains scripts and instructions for scraping dynamic websites usi
 3. Run the script by executing `./bash-hornbachers.sh`
 4. Check the logs in the `/scraper/logs` directory for any output or errors.
 5. View the scraped data in the `/scraper/raw_output` directory.
-```
+
