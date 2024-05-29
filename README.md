@@ -4,7 +4,7 @@
 
 This example contains scripts and instructions for scraping dynamic websites using Beautiful Soup (Bs4) and Selenium. The scraping process is demonstrated using the Hornbacher's website as an example.
 
-## Prerequisites
+## <span style="color:red">Prerequisites</span>
 
 #### Cygwin64 Terminal Installation
 
