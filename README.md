@@ -6,14 +6,14 @@ This example contains scripts and instructions for scraping dynamic websites usi
 
 ## Prerequisites
 
-### Cygwin64 Terminal Installation
+#### Cygwin64 Terminal Installation
 
 1. **Install Cygwin64 Terminal**: Download and install Cygwin64 Terminal from [here](https://www.cygwin.com/setup-x86_64.exe).
 2. **Select All Packages**: During installation, select all packages for installation.
 3. **Complete Installation**: Once you've installed your desired subset of the Cygwin distribution, the setup program will remember what you selected. You can re-run it to update your system with any new package releases.
 4. **For Further Queries**: For any other queries, refer to the official website [here](https://www.cygwin.com/install.html).
 
-### Geckodriver Installation
+#### Geckodriver Installation
 
 1. **Download GeckoDriver**: Obtain the Geckodriver from [here](https://github.com/mozilla/geckodriver/releases/download/v0.34.0/geckodriver-v0.34.0-win64.zip).
 2. **Uzip**: Once downloaded, unzip the `geckodriver.exe` file and place it in your preferred directory. 
